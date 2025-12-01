@@ -1,7 +1,26 @@
 {
   "common": {
     "hello": "Hello",
-    "welcome": "Welcome to Dinhan Store"
+    "welcome": "Welcome to Dinhan Store",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "all": "All",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "viewMore": "View More",
+    "close": "Close",
+    "currency": "$",
+    "language": "Language"
   },
   "nav": {
     "home": "Home",
@@ -9,32 +28,229 @@
     "rackets": "Rackets",
     "shoes": "Shoes",
     "apparel": "Apparel",
+    "bags": "Bags",
     "accessories": "Accessories",
+    "machines": "Stringing Machines",
     "about": "About",
-    "contact": "Contact"
+    "contact": "Contact",
+    "account": "Account",
+    "cart": "Cart",
+    "wishlist": "Wishlist",
+    "login": "Login",
+    "logout": "Logout",
+    "register": "Register"
   },
   "home": {
     "hero": {
       "title": "Premium Badminton Equipment",
       "subtitle": "Elevate your game with top-quality rackets, shoes, and gear from leading brands",
       "shopNow": "Shop Now",
-      "viewCollection": "View Collection"
+      "viewCollection": "View Collection",
+      "newArrivals": "New Arrivals",
+      "bestSellers": "Best Sellers"
     },
     "categories": {
       "title": "Shop by Category",
+      "subtitle": "Explore products by category",
       "rackets": "Rackets",
       "shoes": "Shoes",
       "apparel": "Apparel",
-      "accessories": "Accessories"
+      "bags": "Bags",
+      "accessories": "Accessories",
+      "machines": "Machines"
     },
     "featured": {
       "title": "Featured Products",
+      "subtitle": "Our most popular products",
       "viewAll": "View All"
+    },
+    "promo": {
+      "freeShipping": "Free Shipping",
+      "freeShippingDesc": "Orders over $20",
+      "warranty": "Official Warranty",
+      "warrantyDesc": "30-day returns",
+      "fastDelivery": "Fast Delivery",
+      "fastDeliveryDesc": "Receive within 24h",
+      "support": "24/7 Support",
+      "supportDesc": "Dedicated assistance",
+      "specialOffer": "Special Offer",
+      "discount": "Up to {percent}% off",
+      "forNewMembers": "for new members",
+      "shopNow": "Shop Now",
+      "learnMore": "Learn More"
+    },
+    "newsletter": {
+      "title": "Subscribe to Newsletter",
+      "subtitle": "Get the latest promotions and new products",
+      "placeholder": "Enter your email",
+      "subscribe": "Subscribe"
+    },
+    "stats": {
+      "products": "Products",
+      "customers": "Customers",
+      "brands": "Brands",
+      "satisfaction": "Satisfaction"
     }
   },
   "product": {
     "addToCart": "Add to Cart",
+    "buyNow": "Buy Now",
     "outOfStock": "Out of Stock",
-    "sale": "Sale"
+    "inStock": "In Stock",
+    "sale": "Sale",
+    "new": "New",
+    "hot": "Hot",
+    "price": "Price",
+    "originalPrice": "Original Price",
+    "quantity": "Quantity",
+    "total": "Total",
+    "description": "Description",
+    "specifications": "Specifications",
+    "reviews": "Reviews",
+    "relatedProducts": "Related Products",
+    "brand": "Brand",
+    "category": "Category",
+    "sku": "SKU",
+    "stock": "Stock",
+    "noProducts": "No products found",
+    "filterBy": "Filter by",
+    "sortBy": "Sort by",
+    "priceRange": "Price Range",
+    "sortOptions": {
+      "newest": "Newest",
+      "priceAsc": "Price: Low to High",
+      "priceDesc": "Price: High to Low",
+      "nameAsc": "Name: A-Z",
+      "nameDesc": "Name: Z-A",
+      "popular": "Most Popular"
+    }
+  },
+  "cart": {
+    "title": "Shopping Cart",
+    "empty": "Your cart is empty",
+    "emptyDesc": "You haven't added any products to your cart yet",
+    "continueShopping": "Continue Shopping",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "discount": "Discount",
+    "total": "Total",
+    "checkout": "Checkout",
+    "remove": "Remove",
+    "update": "Update",
+    "discountCode": "Discount Code",
+    "applyCode": "Apply",
+    "invalidCode": "Invalid code",
+    "codeApplied": "Discount code applied",
+    "freeShipping": "Free Shipping",
+    "items": "items",
+    "pointsUsed": "Points Used",
+    "pointsAvailable": "Points Available"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "shippingInfo": "Shipping Information",
+    "paymentMethod": "Payment Method",
+    "orderSummary": "Order Summary",
+    "placeOrder": "Place Order",
+    "processing": "Processing...",
+    "success": "Order Placed Successfully!",
+    "successDesc": "Thank you for your purchase. Your order is being processed.",
+    "orderNumber": "Order Number",
+    "viewOrder": "View Order",
+    "backToHome": "Back to Home",
+    "form": {
+      "fullName": "Full Name",
+      "phone": "Phone Number",
+      "email": "Email",
+      "province": "Province/City",
+      "district": "District",
+      "ward": "Ward",
+      "address": "Address Details",
+      "note": "Note"
+    },
+    "payment": {
+      "cod": "Cash on Delivery",
+      "bank": "Bank Transfer",
+      "card": "Credit/Debit Card",
+      "momo": "MoMo Wallet",
+      "vnpay": "VNPay"
+    }
+  },
+  "account": {
+    "title": "My Account",
+    "profile": "Profile",
+    "orders": "My Orders",
+    "addresses": "Address Book",
+    "wishlist": "Wishlist",
+    "points": "Reward Points",
+    "settings": "Settings",
+    "logout": "Logout",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password",
+    "orderHistory": "Order History",
+    "noOrders": "You have no orders yet",
+    "orderStatus": {
+      "pending": "Pending",
+      "confirmed": "Confirmed",
+      "shipping": "Shipping",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember Me",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "orContinueWith": "Or continue with",
+    "loginSuccess": "Login successful",
+    "registerSuccess": "Registration successful",
+    "logoutSuccess": "Logout successful"
+  },
+  "footer": {
+    "about": "About Us",
+    "aboutDesc": "Providing authentic badminton products with the best quality and reasonable prices.",
+    "quickLinks": "Quick Links",
+    "categories": "Product Categories",
+    "contact": "Contact",
+    "address": "Address",
+    "hotline": "Hotline",
+    "email": "Email",
+    "followUs": "Follow Us",
+    "copyright": "© 2024 Dinhan Store. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "warranty": "Warranty Policy",
+    "returnPolicy": "Return Policy",
+    "trustBadges": {
+      "securePayment": "Secure Payment",
+      "nationwide": "Nationwide Delivery",
+      "warranty": "Official Warranty"
+    }
+  },
+  "chat": {
+    "title": "Online Support",
+    "subtitle": "Powered by Gemini AI",
+    "placeholder": "Type a message...",
+    "welcome": "Hello! 👋 I'm Dinhan Store's AI assistant. I can help you learn about badminton products, store policies, or assist with orders. How can I help you?",
+    "quickReplies": {
+      "newbie": "Which racket is good for beginners?",
+      "return": "Return policy",
+      "shipping": "How much is shipping?"
+    },
+    "error": "Sorry, an error occurred. Please try again later."
+  },
+  "errors": {
+    "notFound": "Page Not Found",
+    "serverError": "Server Error",
+    "unauthorized": "Please login",
+    "forbidden": "Access Denied",
+    "networkError": "Network Error"
   }
 }

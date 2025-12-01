@@ -1,7 +1,26 @@
 {
   "common": {
     "hello": "Xin chào",
-    "welcome": "Chào mừng đến với Dinhan Store"
+    "welcome": "Chào mừng đến với Dinhan Store",
+    "loading": "Đang tải...",
+    "error": "Đã có lỗi xảy ra",
+    "success": "Thành công",
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "save": "Lưu",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "search": "Tìm kiếm",
+    "filter": "Lọc",
+    "sort": "Sắp xếp",
+    "all": "Tất cả",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước đó",
+    "viewMore": "Xem thêm",
+    "close": "Đóng",
+    "currency": "₫",
+    "language": "Ngôn ngữ"
   },
   "nav": {
     "home": "Trang chủ",
@@ -9,32 +28,229 @@
     "rackets": "Vợt cầu lông",
     "shoes": "Giày",
     "apparel": "Quần áo",
+    "bags": "Balo & Túi",
     "accessories": "Phụ kiện",
+    "machines": "Máy căng vợt",
     "about": "Giới thiệu",
-    "contact": "Liên hệ"
+    "contact": "Liên hệ",
+    "account": "Tài khoản",
+    "cart": "Giỏ hàng",
+    "wishlist": "Yêu thích",
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "register": "Đăng ký"
   },
   "home": {
     "hero": {
       "title": "Dụng Cụ Cầu Lông Cao Cấp",
       "subtitle": "Nâng tầm trận đấu với vợt, giày và phụ kiện chất lượng từ các thương hiệu hàng đầu",
       "shopNow": "Mua Ngay",
-      "viewCollection": "Xem Bộ Sưu Tập"
+      "viewCollection": "Xem Bộ Sưu Tập",
+      "newArrivals": "Hàng Mới Về",
+      "bestSellers": "Bán Chạy Nhất"
     },
     "categories": {
       "title": "Danh Mục Sản Phẩm",
+      "subtitle": "Khám phá các sản phẩm theo danh mục",
       "rackets": "Vợt",
       "shoes": "Giày",
       "apparel": "Quần áo",
-      "accessories": "Phụ kiện"
+      "bags": "Balo",
+      "accessories": "Phụ kiện",
+      "machines": "Máy căng"
     },
     "featured": {
       "title": "Sản Phẩm Nổi Bật",
+      "subtitle": "Những sản phẩm được yêu thích nhất",
       "viewAll": "Xem Tất Cả"
+    },
+    "promo": {
+      "freeShipping": "Miễn phí vận chuyển",
+      "freeShippingDesc": "Đơn hàng từ 500K",
+      "warranty": "Bảo hành chính hãng",
+      "warrantyDesc": "Đổi trả trong 30 ngày",
+      "fastDelivery": "Giao hàng nhanh",
+      "fastDeliveryDesc": "Nhận hàng trong 24h",
+      "support": "Hỗ trợ 24/7",
+      "supportDesc": "Tư vấn nhiệt tình",
+      "specialOffer": "Ưu đãi đặc biệt",
+      "discount": "Giảm đến {percent}%",
+      "forNewMembers": "cho thành viên mới",
+      "shopNow": "Mua sắm ngay",
+      "learnMore": "Tìm hiểu thêm"
+    },
+    "newsletter": {
+      "title": "Đăng ký nhận tin",
+      "subtitle": "Nhận thông tin khuyến mãi và sản phẩm mới nhất",
+      "placeholder": "Nhập email của bạn",
+      "subscribe": "Đăng ký"
+    },
+    "stats": {
+      "products": "Sản phẩm",
+      "customers": "Khách hàng",
+      "brands": "Thương hiệu",
+      "satisfaction": "Hài lòng"
     }
   },
   "product": {
     "addToCart": "Thêm vào giỏ",
+    "buyNow": "Mua ngay",
     "outOfStock": "Hết hàng",
-    "sale": "Giảm giá"
+    "inStock": "Còn hàng",
+    "sale": "Giảm giá",
+    "new": "Mới",
+    "hot": "Hot",
+    "price": "Giá",
+    "originalPrice": "Giá gốc",
+    "quantity": "Số lượng",
+    "total": "Tổng cộng",
+    "description": "Mô tả",
+    "specifications": "Thông số kỹ thuật",
+    "reviews": "Đánh giá",
+    "relatedProducts": "Sản phẩm liên quan",
+    "brand": "Thương hiệu",
+    "category": "Danh mục",
+    "sku": "Mã SP",
+    "stock": "Tồn kho",
+    "noProducts": "Không có sản phẩm nào",
+    "filterBy": "Lọc theo",
+    "sortBy": "Sắp xếp theo",
+    "priceRange": "Khoảng giá",
+    "sortOptions": {
+      "newest": "Mới nhất",
+      "priceAsc": "Giá tăng dần",
+      "priceDesc": "Giá giảm dần",
+      "nameAsc": "Tên A-Z",
+      "nameDesc": "Tên Z-A",
+      "popular": "Phổ biến nhất"
+    }
+  },
+  "cart": {
+    "title": "Giỏ hàng",
+    "empty": "Giỏ hàng trống",
+    "emptyDesc": "Bạn chưa có sản phẩm nào trong giỏ hàng",
+    "continueShopping": "Tiếp tục mua sắm",
+    "subtotal": "Tạm tính",
+    "shipping": "Phí vận chuyển",
+    "discount": "Giảm giá",
+    "total": "Tổng cộng",
+    "checkout": "Thanh toán",
+    "remove": "Xóa",
+    "update": "Cập nhật",
+    "discountCode": "Mã giảm giá",
+    "applyCode": "Áp dụng",
+    "invalidCode": "Mã không hợp lệ",
+    "codeApplied": "Đã áp dụng mã giảm giá",
+    "freeShipping": "Miễn phí ship",
+    "items": "sản phẩm",
+    "pointsUsed": "Điểm đã dùng",
+    "pointsAvailable": "Điểm khả dụng"
+  },
+  "checkout": {
+    "title": "Thanh toán",
+    "shippingInfo": "Thông tin giao hàng",
+    "paymentMethod": "Phương thức thanh toán",
+    "orderSummary": "Tóm tắt đơn hàng",
+    "placeOrder": "Đặt hàng",
+    "processing": "Đang xử lý...",
+    "success": "Đặt hàng thành công!",
+    "successDesc": "Cảm ơn bạn đã mua hàng. Đơn hàng của bạn đang được xử lý.",
+    "orderNumber": "Mã đơn hàng",
+    "viewOrder": "Xem đơn hàng",
+    "backToHome": "Về trang chủ",
+    "form": {
+      "fullName": "Họ và tên",
+      "phone": "Số điện thoại",
+      "email": "Email",
+      "province": "Tỉnh/Thành phố",
+      "district": "Quận/Huyện",
+      "ward": "Phường/Xã",
+      "address": "Địa chỉ chi tiết",
+      "note": "Ghi chú"
+    },
+    "payment": {
+      "cod": "Thanh toán khi nhận hàng",
+      "bank": "Chuyển khoản ngân hàng",
+      "card": "Thẻ tín dụng/Ghi nợ",
+      "momo": "Ví MoMo",
+      "vnpay": "VNPay"
+    }
+  },
+  "account": {
+    "title": "Tài khoản",
+    "profile": "Thông tin cá nhân",
+    "orders": "Đơn hàng của tôi",
+    "addresses": "Sổ địa chỉ",
+    "wishlist": "Sản phẩm yêu thích",
+    "points": "Điểm thưởng",
+    "settings": "Cài đặt",
+    "logout": "Đăng xuất",
+    "editProfile": "Chỉnh sửa thông tin",
+    "changePassword": "Đổi mật khẩu",
+    "orderHistory": "Lịch sử đơn hàng",
+    "noOrders": "Bạn chưa có đơn hàng nào",
+    "orderStatus": {
+      "pending": "Chờ xác nhận",
+      "confirmed": "Đã xác nhận",
+      "shipping": "Đang giao hàng",
+      "delivered": "Đã giao hàng",
+      "cancelled": "Đã hủy"
+    }
+  },
+  "auth": {
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "logout": "Đăng xuất",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "forgotPassword": "Quên mật khẩu?",
+    "rememberMe": "Ghi nhớ đăng nhập",
+    "noAccount": "Chưa có tài khoản?",
+    "hasAccount": "Đã có tài khoản?",
+    "orContinueWith": "Hoặc tiếp tục với",
+    "loginSuccess": "Đăng nhập thành công",
+    "registerSuccess": "Đăng ký thành công",
+    "logoutSuccess": "Đăng xuất thành công"
+  },
+  "footer": {
+    "about": "Về chúng tôi",
+    "aboutDesc": "Chuyên cung cấp các sản phẩm cầu lông chính hãng với chất lượng tốt nhất và giá cả hợp lý.",
+    "quickLinks": "Liên kết nhanh",
+    "categories": "Danh mục sản phẩm",
+    "contact": "Liên hệ",
+    "address": "Địa chỉ",
+    "hotline": "Hotline",
+    "email": "Email",
+    "followUs": "Theo dõi chúng tôi",
+    "copyright": "© 2024 Dinhan Store. Tất cả quyền được bảo lưu.",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản sử dụng",
+    "warranty": "Chính sách bảo hành",
+    "returnPolicy": "Chính sách đổi trả",
+    "trustBadges": {
+      "securePayment": "Thanh toán an toàn",
+      "nationwide": "Giao hàng toàn quốc",
+      "warranty": "Bảo hành chính hãng"
+    }
+  },
+  "chat": {
+    "title": "Hỗ trợ trực tuyến",
+    "subtitle": "Powered by Gemini AI",
+    "placeholder": "Nhập tin nhắn...",
+    "welcome": "Xin chào! 👋 Tôi là trợ lý AI của Dinhan Store. Tôi có thể giúp bạn tìm hiểu về sản phẩm cầu lông, chính sách cửa hàng, hoặc hỗ trợ đặt hàng. Bạn cần hỗ trợ gì ạ?",
+    "quickReplies": {
+      "newbie": "Vợt nào phù hợp cho người mới?",
+      "return": "Chính sách đổi trả",
+      "shipping": "Giá ship bao nhiêu?"
+    },
+    "error": "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau."
+  },
+  "errors": {
+    "notFound": "Không tìm thấy trang",
+    "serverError": "Lỗi máy chủ",
+    "unauthorized": "Bạn cần đăng nhập",
+    "forbidden": "Bạn không có quyền truy cập",
+    "networkError": "Lỗi kết nối mạng"
   }
 }
