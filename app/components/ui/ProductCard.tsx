@@ -5,6 +5,7 @@ import { useCart } from "@/app/hooks/useCartStore";
 import { ShoppingCart, Heart, Eye, Star } from "lucide-react";
 import { formatPriceSimple } from "@/lib/formatPrice";
 import { useState } from "react";
+import Link from "next/link";
 
 interface ProductCardProps {
   id: number;
@@ -29,11 +30,23 @@ export function ProductCard({ id, name, slug, price, salePrice, image, brand, st
   const hasDiscount = numSalePrice && numSalePrice < numPrice;
   const discountPercent = hasDiscount ? Math.round((1 - numSalePrice / numPrice) * 100) : 0;
 
-  const handleAddToCart = () => {
+  // Generate slug from name if not provided
+  const productSlug = slug || name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     addItem({
       id,
       name,
-      slug: slug || "",
+      slug: productSlug,
       price: numPrice,
       salePrice: numSalePrice,
       image: image || "",
@@ -43,8 +56,9 @@ export function ProductCard({ id, name, slug, price, salePrice, image, brand, st
   };
 
   return (
-    <div
-      className="group relative bg-white rounded-3xl overflow-hidden card-hover border border-gray-100"
+    <Link
+      href={`/${locale}/products/${productSlug}`}
+      className="group relative bg-white rounded-3xl overflow-hidden card-hover border border-gray-100 block"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -71,16 +85,20 @@ export function ProductCard({ id, name, slug, price, salePrice, image, brand, st
         {/* Action buttons */}
         <div className={`absolute top-4 right-4 z-10 flex flex-col gap-2 transition-all duration-300 ${isHovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-4"}`}>
           <button
-            onClick={() => setIsLiked(!isLiked)}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsLiked(!isLiked);
+            }}
             className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg ${
               isLiked ? "bg-red-500 text-white" : "bg-white text-gray-600 hover:bg-red-50 hover:text-red-500"
             }`}
           >
             <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
           </button>
-          <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-600 hover:bg-blue-50 hover:text-blue-500 transition-all duration-300 shadow-lg">
+          <span className="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-600 hover:bg-blue-50 hover:text-blue-500 transition-all duration-300 shadow-lg">
             <Eye className="w-5 h-5" />
-          </button>
+          </span>
         </div>
 
         {/* Product image */}
@@ -157,6 +175,6 @@ export function ProductCard({ id, name, slug, price, salePrice, image, brand, st
 
       {/* Bottom accent line */}
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left" />
-    </div>
+    </Link>
   );
 }
