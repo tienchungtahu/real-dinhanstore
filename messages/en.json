@@ -291,5 +291,23 @@
     "unauthorized": "Please login",
     "forbidden": "Access Denied",
     "networkError": "Network Error"
+  },
+  "products": {
+    "title": "Products",
+    "subtitle": "Discover our premium badminton collection",
+    "searchPlaceholder": "Search products...",
+    "filters": "Filters",
+    "clearFilters": "Clear filters",
+    "productCount": "{count} products",
+    "categories": "Categories",
+    "allCategories": "All",
+    "brands": "Brands",
+    "priceRange": "Price Range",
+    "viewProducts": "View {count} products",
+    "noProducts": "No products found",
+    "noProductsDesc": "Try changing filters or search keywords",
+    "error": "An error occurred",
+    "tryAgain": "Try again",
+    "refresh": "Refresh"
   }
 }

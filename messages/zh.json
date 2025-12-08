@@ -286,5 +286,23 @@
     "unauthorized": "请先登录",
     "forbidden": "访问被拒绝",
     "networkError": "网络错误"
+  },
+  "products": {
+    "title": "产品",
+    "subtitle": "探索我们的优质羽毛球系列",
+    "searchPlaceholder": "搜索产品...",
+    "filters": "筛选",
+    "clearFilters": "清除筛选",
+    "productCount": "{count}个产品",
+    "categories": "分类",
+    "allCategories": "全部",
+    "brands": "品牌",
+    "priceRange": "价格范围",
+    "viewProducts": "查看{count}个产品",
+    "noProducts": "未找到产品",
+    "noProductsDesc": "请尝试更改筛选条件或搜索关键词",
+    "error": "发生错误",
+    "tryAgain": "重试",
+    "refresh": "刷新"
   }
 }

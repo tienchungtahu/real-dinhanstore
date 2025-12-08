@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { NavigationMenuDemo } from "@/app/components/navigation-menu/navigation-menu";
@@ -6,6 +7,41 @@ import { ProductStoreProvider } from "@/app/hooks/useProductStore";
 import { CartProvider } from "@/app/hooks/useCartStore";
 import { CartModal } from "@/app/components/cart/CartModal";
 import { ChatBot } from "@/app/components/chat/ChatBot";
+
+export const metadata: Metadata = {
+  title: {
+    default: "Dinhan Store - Cửa hàng cầu lông chính hãng",
+    template: "%s | Dinhan Store",
+  },
+  description:
+    "Dinhan Store - Chuyên cung cấp vợt cầu lông, giày cầu lông, phụ kiện cầu lông chính hãng. Giá tốt nhất, giao hàng toàn quốc.",
+  keywords: [
+    "cầu lông",
+    "vợt cầu lông",
+    "giày cầu lông",
+    "phụ kiện cầu lông",
+    "dinhan store",
+    "cửa hàng cầu lông",
+    "badminton",
+  ],
+  authors: [{ name: "Dinhan Store" }],
+  openGraph: {
+    title: "Dinhan Store - Cửa hàng cầu lông chính hãng",
+    description:
+      "Chuyên cung cấp vợt cầu lông, giày cầu lông, phụ kiện cầu lông chính hãng. Giá tốt nhất, giao hàng toàn quốc.",
+    type: "website",
+    locale: "vi_VN",
+    siteName: "Dinhan Store",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  icons: {
+    icon: "/store.png",
+    apple: "/store.png",
+  },
+};
 
 export default async function LocaleLayout({
   children,

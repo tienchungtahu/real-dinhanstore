@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Search,
   SlidersHorizontal,
@@ -30,6 +31,7 @@ const categoryIcons: Record<string, string> = {
 };
 
 export default function ProductsPage() {
+  const t = useTranslations("products");
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category") || "all";
   const brandParam = searchParams.get("brand") || "";
@@ -104,14 +106,14 @@ export default function ProductsPage() {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <span className="text-4xl">😕</span>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Đã xảy ra lỗi</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{t("error")}</h2>
           <p className="text-gray-500 mb-6">{error}</p>
           <button
             onClick={refreshData}
             className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl font-semibold hover:bg-emerald-700 transition-colors"
           >
             <RefreshCw className="w-5 h-5" />
-            Thử lại
+            {t("tryAgain")}
           </button>
         </div>
       </div>
@@ -125,14 +127,14 @@ export default function ProductsPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
             <div>
-              <h1 className="text-4xl font-bold mb-2">Sản phẩm</h1>
-              <p className="text-white/80">Khám phá bộ sưu tập cầu lông chất lượng cao</p>
+              <h1 className="text-4xl font-bold mb-2">{t("title")}</h1>
+              <p className="text-white/80">{t("subtitle")}</p>
             </div>
             <div className="relative max-w-md w-full">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Tìm kiếm sản phẩm..."
+                placeholder={t("searchPlaceholder")}
                 value={search}
                 onChange={(e) => {
                   setSearch(e.target.value);
@@ -156,7 +158,7 @@ export default function ProductsPage() {
               }`}
             >
               <Filter className="w-5 h-5" />
-              Bộ lọc
+              {t("filters")}
               {hasActiveFilters && (
                 <span className="w-2 h-2 bg-emerald-400 rounded-full" />
               )}
@@ -168,14 +170,14 @@ export default function ProductsPage() {
                 className="inline-flex items-center gap-1 px-3 py-2 text-sm text-gray-500 hover:text-red-500 transition-colors"
               >
                 <X className="w-4 h-4" />
-                Xóa bộ lọc
+                {t("clearFilters")}
               </button>
             )}
           </div>
 
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-500">
-              {filteredProducts.length} sản phẩm
+              {t("productCount", { count: filteredProducts.length })}
             </span>
             
             {/* Grid toggle */}
@@ -211,7 +213,7 @@ export default function ProductsPage() {
             <div className="lg:sticky lg:top-36 p-6 lg:p-0">
               {/* Mobile header */}
               <div className="flex items-center justify-between mb-6 lg:hidden">
-                <h2 className="text-xl font-bold">Bộ lọc</h2>
+                <h2 className="text-xl font-bold">{t("filters")}</h2>
                 <button
                   onClick={() => setShowFilters(false)}
                   className="p-2 hover:bg-gray-100 rounded-xl"
@@ -225,7 +227,7 @@ export default function ProductsPage() {
                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                   <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-emerald-500" />
-                    Danh mục
+                    {t("categories")}
                   </h3>
                   <div className="space-y-1">
                     <button
@@ -240,7 +242,7 @@ export default function ProductsPage() {
                       }`}
                     >
                       <span className="text-lg">✨</span>
-                      <span className="font-medium">Tất cả</span>
+                      <span className="font-medium">{t("allCategories")}</span>
                     </button>
                     {categories.map((cat) => (
                       <button
@@ -264,7 +266,7 @@ export default function ProductsPage() {
 
                 {/* Brands */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                  <h3 className="font-bold text-gray-900 mb-4">Thương hiệu</h3>
+                  <h3 className="font-bold text-gray-900 mb-4">{t("brands")}</h3>
                   <div className="space-y-2 max-h-64 overflow-y-auto">
                     {allBrands.map((brand) => (
                       <label
@@ -291,7 +293,7 @@ export default function ProductsPage() {
 
                 {/* Price Range */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                  <h3 className="font-bold text-gray-900 mb-4">Khoảng giá</h3>
+                  <h3 className="font-bold text-gray-900 mb-4">{t("priceRange")}</h3>
                   <div className="space-y-4">
                     <input
                       type="range"
@@ -321,7 +323,7 @@ export default function ProductsPage() {
                   onClick={() => setShowFilters(false)}
                   className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl font-semibold shadow-lg shadow-emerald-500/30 lg:hidden"
                 >
-                  Xem {filteredProducts.length} sản phẩm
+                  {t("viewProducts", { count: filteredProducts.length })}
                 </button>
               </div>
             </div>
@@ -417,14 +419,14 @@ export default function ProductsPage() {
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Search className="w-10 h-10 text-gray-300" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Không tìm thấy sản phẩm</h3>
-                <p className="text-gray-500 mb-6">Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{t("noProducts")}</h3>
+                <p className="text-gray-500 mb-6">{t("noProductsDesc")}</p>
                 <button
                   onClick={clearFilters}
                   className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-2xl font-semibold hover:bg-emerald-700 transition-colors"
                 >
                   <RefreshCw className="w-5 h-5" />
-                  Xóa bộ lọc
+                  {t("clearFilters")}
                 </button>
               </div>
             )}

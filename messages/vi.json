@@ -291,5 +291,23 @@
     "unauthorized": "Bạn cần đăng nhập",
     "forbidden": "Bạn không có quyền truy cập",
     "networkError": "Lỗi kết nối mạng"
+  },
+  "products": {
+    "title": "Sản phẩm",
+    "subtitle": "Khám phá bộ sưu tập cầu lông chất lượng cao",
+    "searchPlaceholder": "Tìm kiếm sản phẩm...",
+    "filters": "Bộ lọc",
+    "clearFilters": "Xóa bộ lọc",
+    "productCount": "{count} sản phẩm",
+    "categories": "Danh mục",
+    "allCategories": "Tất cả",
+    "brands": "Thương hiệu",
+    "priceRange": "Khoảng giá",
+    "viewProducts": "Xem {count} sản phẩm",
+    "noProducts": "Không tìm thấy sản phẩm",
+    "noProductsDesc": "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm",
+    "error": "Đã xảy ra lỗi",
+    "tryAgain": "Thử lại",
+    "refresh": "Làm mới"
   }
 }

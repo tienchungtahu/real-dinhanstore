@@ -137,12 +137,12 @@ export function ChatBot() {
       {/* Chat Window */}
       {isOpen && (
         <div
-          className={`fixed bottom-6 left-6 z-50 bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden transition-all duration-300 ${
+          className={`fixed bottom-6 left-6 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transition-all duration-300 ${
             isMinimized ? "w-72 h-16" : "w-[360px] sm:w-96 h-[500px] sm:h-[600px] max-h-[80vh]"
           }`}
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 p-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
                 <Bot className="w-6 h-6 text-white" />

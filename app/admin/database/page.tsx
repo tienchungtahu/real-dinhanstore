@@ -70,6 +70,26 @@ export default function DatabasePage() {
     }
   };
 
+  const resetDatabase = async () => {
+    if (!confirm("Bạn có chắc muốn xóa tất cả sản phẩm và danh mục? Hành động này không thể hoàn tác!")) {
+      return;
+    }
+    setLoading("reset");
+    setMessage(null);
+    try {
+      const res = await fetch("/api/db/reset", { method: "POST" });
+      const data = await res.json();
+      setMessage({
+        type: res.ok ? "success" : "error",
+        text: data.message || data.error,
+      });
+    } catch {
+      setMessage({ type: "error", text: "Lỗi khi reset database" });
+    } finally {
+      setLoading(null);
+    }
+  };
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Quản lý Database</h1>
@@ -112,7 +132,7 @@ export default function DatabasePage() {
       </div>
 
       {/* Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* Init Database */}
         <div className="bg-white rounded-xl shadow-sm p-6">
           <h3 className="text-lg font-semibold mb-2">1. Tạo Database</h3>
@@ -158,6 +178,22 @@ export default function DatabasePage() {
           >
             {loading === "images" ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
             Thêm ảnh
+          </button>
+        </div>
+
+        {/* Reset Database */}
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h3 className="text-lg font-semibold mb-2 text-red-600">⚠️ Reset Data</h3>
+          <p className="text-gray-600 text-sm mb-4">
+            Xóa tất cả sản phẩm và danh mục. Dùng khi muốn seed lại data mới.
+          </p>
+          <button
+            onClick={resetDatabase}
+            disabled={loading === "reset"}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+          >
+            {loading === "reset" ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
+            Reset Data
           </button>
         </div>
       </div>

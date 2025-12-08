@@ -286,5 +286,23 @@
     "unauthorized": "ログインしてください",
     "forbidden": "アクセスが拒否されました",
     "networkError": "ネットワークエラー"
+  },
+  "products": {
+    "title": "商品",
+    "subtitle": "プレミアムバドミントンコレクションをご覧ください",
+    "searchPlaceholder": "商品を検索...",
+    "filters": "フィルター",
+    "clearFilters": "フィルターをクリア",
+    "productCount": "{count}件の商品",
+    "categories": "カテゴリー",
+    "allCategories": "すべて",
+    "brands": "ブランド",
+    "priceRange": "価格帯",
+    "viewProducts": "{count}件の商品を見る",
+    "noProducts": "商品が見つかりません",
+    "noProductsDesc": "フィルターまたは検索キーワードを変更してください",
+    "error": "エラーが発生しました",
+    "tryAgain": "再試行",
+    "refresh": "更新"
   }
 }
