@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Order } from "@/lib/db/entities/Order";
-import { User } from "@/lib/db/entities/User";
-import { Product } from "@/lib/db/entities/Product";
+import prisma from "@/lib/db/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,22 +9,16 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ products: [] });
     }
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-    const orderRepo = dataSource.getRepository(Order);
-    const productRepo = dataSource.getRepository(Product);
-
-    // Find user
-    const user = await userRepo.findOne({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (!user) {
       return NextResponse.json({ products: [] });
     }
 
     // Get user's orders with items
-    const orders = await orderRepo.find({
+    const orders = await prisma.order.findMany({
       where: { userId: user.id.toString() },
-      relations: ["items"],
-      order: { createdAt: "DESC" },
+      include: { items: true },
+      orderBy: { createdAt: "desc" },
     });
 
     // Extract unique product IDs from orders
@@ -48,11 +39,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch products that still exist
-    const products = await productRepo
-      .createQueryBuilder("product")
-      .where("product.id IN (:...ids)", { ids: Array.from(productIds) })
-      .andWhere("product.isActive = :isActive", { isActive: true })
-      .getMany();
+    const products = await prisma.product.findMany({
+      where: {
+        id: { in: Array.from(productIds) },
+        isActive: true,
+      },
+      include: { category: true },
+    });
 
     // Sort by purchase count (most purchased first)
     const sortedProducts = products
@@ -62,13 +55,13 @@ export async function GET(request: NextRequest) {
         slug: p.slug,
         price: Number(p.price),
         salePrice: p.salePrice ? Number(p.salePrice) : null,
-        images: p.images,
+        images: p.images ? p.images.split(",") : [],
         brand: p.brand,
         category: p.category,
         purchaseCount: productPurchaseCount[p.id] || 0,
       }))
       .sort((a, b) => b.purchaseCount - a.purchaseCount)
-      .slice(0, 10); // Limit to 10 products
+      .slice(0, 10);
 
     return NextResponse.json({ products: sortedProducts });
   } catch (error) {

@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Order } from "@/lib/db/entities/Order";
-import { OrderItem } from "@/lib/db/entities/OrderItem";
-import { Product } from "@/lib/db/entities/Product";
+import prisma from "@/lib/db/prisma";
+import { Prisma } from "@prisma/client";
 
 // Generate unique order number
 function generateOrderNumber(): string {
@@ -19,32 +17,30 @@ function generateOrderNumber(): string {
 // GET all orders
 export async function GET(request: NextRequest) {
   try {
-    const dataSource = await getDataSource();
-    const orderRepo = dataSource.getRepository(Order);
-
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const userId = searchParams.get("userId");
     const limit = parseInt(searchParams.get("limit") || "20");
     const page = parseInt(searchParams.get("page") || "1");
 
-    let query = orderRepo
-      .createQueryBuilder("order")
-      .leftJoinAndSelect("order.items", "items")
-      .orderBy("order.createdAt", "DESC");
-
+    const where: Prisma.OrderWhereInput = {};
     if (status && status !== "all") {
-      query = query.where("order.status = :status", { status });
+      where.status = status;
     }
     if (userId) {
-      query = query.andWhere("order.userId = :userId", { userId });
+      where.userId = userId;
     }
 
-    const total = await query.getCount();
-    const orders = await query
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getMany();
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        where,
+        include: { items: true },
+        orderBy: { createdAt: "desc" },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.order.count({ where }),
+    ]);
 
     return NextResponse.json({
       orders,
@@ -64,12 +60,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
+
 // CREATE new order
 export async function POST(request: NextRequest) {
   try {
-    const dataSource = await getDataSource();
-    const orderRepo = dataSource.getRepository(Order);
-    const productRepo = dataSource.getRepository(Product);
     const body = await request.json();
 
     const {
@@ -81,11 +75,9 @@ export async function POST(request: NextRequest) {
       note,
       userId,
       items,
-      // New fields from cart
       total: cartTotal,
       discount,
       discountCode,
-      addressId,
       paymentStatus,
     } = body;
 
@@ -97,14 +89,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate totals and create order items
+    // Calculate totals and prepare order items
     let subtotal = 0;
-    const orderItems: OrderItem[] = [];
+    const orderItemsData: Prisma.OrderItemCreateWithoutOrderInput[] = [];
 
     for (const item of items) {
-      // Support both formats: { productId, quantity } or { id, quantity, name, price, salePrice }
       const productId = item.productId || item.id;
-      const product = await productRepo.findOne({
+      const product = await prisma.product.findUnique({
         where: { id: productId },
       });
 
@@ -122,55 +113,57 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const price = item.salePrice || item.price || product.salePrice || product.price;
+      const price = item.salePrice || item.price || Number(product.salePrice) || Number(product.price);
       const itemTotal = Number(price) * item.quantity;
       subtotal += itemTotal;
 
-      const orderItem = new OrderItem();
-      orderItem.productId = product.id;
-      orderItem.productName = item.name || product.name;
-      orderItem.price = Number(price);
-      orderItem.quantity = item.quantity;
-      orderItem.total = itemTotal;
-      // Store product snapshot for order history
-      orderItem.productSnapshot = {
-        id: product.id,
-        name: product.name,
-        slug: product.slug,
-        price: Number(product.price),
-        salePrice: product.salePrice ? Number(product.salePrice) : undefined,
-        brand: product.brand,
-        image: product.images?.[0],
-      };
-      orderItems.push(orderItem);
+      orderItemsData.push({
+        productId: product.id,
+        productName: item.name || product.name,
+        price,
+        quantity: item.quantity,
+        total: itemTotal,
+        productSnapshot: {
+          id: product.id,
+          name: product.name,
+          slug: product.slug,
+          price: Number(product.price),
+          salePrice: product.salePrice ? Number(product.salePrice) : undefined,
+          brand: product.brand,
+          image: product.images?.split(",")[0],
+        },
+      });
 
       // Update stock
-      product.stock -= item.quantity;
-      await productRepo.save(product);
+      await prisma.product.update({
+        where: { id: product.id },
+        data: { stock: product.stock - item.quantity },
+      });
     }
 
-    const shippingFee = subtotal >= 500000 ? 0 : 30000; // Free shipping over 500k
+    const shippingFee = subtotal >= 500000 ? 0 : 30000;
     const discountAmount = discount ? (subtotal * discount) / 100 : 0;
     const total = cartTotal || (subtotal - discountAmount + shippingFee);
 
-    const order = orderRepo.create({
-      orderNumber: generateOrderNumber(),
-      customerName: customerName || "Khách hàng",
-      customerEmail: customerEmail || "",
-      customerPhone: customerPhone || "",
-      shippingAddress: shippingAddress || "",
-      subtotal,
-      shippingFee,
-      discount: discountAmount,
-      total,
-      paymentMethod: paymentMethod || "cod",
-      note: note || (discountCode ? `Mã giảm giá: ${discountCode}` : ""),
-      userId,
-      items: orderItems,
-      status: paymentStatus === "pending" ? "pending" : "processing",
+    const order = await prisma.order.create({
+      data: {
+        orderNumber: generateOrderNumber(),
+        customerName: customerName || "Khách hàng",
+        customerEmail: customerEmail || "",
+        customerPhone: customerPhone || "",
+        shippingAddress: shippingAddress || "",
+        subtotal,
+        shippingFee,
+        discount: discountAmount,
+        total,
+        paymentMethod: paymentMethod || "cod",
+        note: note || (discountCode ? `Mã giảm giá: ${discountCode}` : ""),
+        userId,
+        status: paymentStatus === "pending" ? "pending" : "processing",
+        items: { create: orderItemsData },
+      },
+      include: { items: true },
     });
-
-    await orderRepo.save(order);
 
     return NextResponse.json({ success: true, order }, { status: 201 });
   } catch (error) {

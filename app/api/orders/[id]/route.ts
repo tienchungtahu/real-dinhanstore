@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Order, OrderStatus } from "@/lib/db/entities/Order";
+import prisma from "@/lib/db/prisma";
 import { sendOrderStatusUpdateEmail } from "@/lib/email/mailer";
+
+type OrderStatus = "pending" | "processing" | "shipped" | "delivered" | "cancelled";
 
 // GET single order
 export async function GET(
@@ -10,12 +11,9 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const dataSource = await getDataSource();
-    const orderRepo = dataSource.getRepository(Order);
-
-    const order = await orderRepo.findOne({
+    const order = await prisma.order.findUnique({
       where: { id: parseInt(id) },
-      relations: ["items"],
+      include: { items: true },
     });
 
     if (!order) {
@@ -39,45 +37,39 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const dataSource = await getDataSource();
-    const orderRepo = dataSource.getRepository(Order);
     const body = await request.json();
 
-    const order = await orderRepo.findOne({
+    const existing = await prisma.order.findUnique({
       where: { id: parseInt(id) },
     });
 
-    if (!order) {
+    if (!existing) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    const oldStatus = order.status;
+    const oldStatus = existing.status;
+    const updateData: { status?: string; note?: string } = {};
 
-    // Only allow updating certain fields
     if (body.status) {
       const validStatuses: OrderStatus[] = [
-        "pending",
-        "processing",
-        "shipped",
-        "delivered",
-        "cancelled",
+        "pending", "processing", "shipped", "delivered", "cancelled",
       ];
       if (!validStatuses.includes(body.status)) {
-        return NextResponse.json(
-          { error: "Invalid status" },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Invalid status" }, { status: 400 });
       }
-      order.status = body.status;
+      updateData.status = body.status;
     }
 
     if (body.note !== undefined) {
-      order.note = body.note;
+      updateData.note = body.note;
     }
 
-    await orderRepo.save(order);
+    const order = await prisma.order.update({
+      where: { id: parseInt(id) },
+      data: updateData,
+    });
 
-    // Send email notification if status changed and customer has email
+    // Send email notification if status changed
     if (body.status && oldStatus !== body.status && order.customerEmail) {
       sendOrderStatusUpdateEmail({
         orderNumber: order.orderNumber,
@@ -109,10 +101,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const dataSource = await getDataSource();
-    const orderRepo = dataSource.getRepository(Order);
-
-    const order = await orderRepo.findOne({
+    const order = await prisma.order.findUnique({
       where: { id: parseInt(id) },
     });
 
@@ -120,7 +109,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Only allow cancelling pending orders
     if (order.status !== "pending") {
       return NextResponse.json(
         { error: "Can only cancel pending orders" },
@@ -128,8 +116,10 @@ export async function DELETE(
       );
     }
 
-    order.status = "cancelled";
-    await orderRepo.save(order);
+    await prisma.order.update({
+      where: { id: parseInt(id) },
+      data: { status: "cancelled" },
+    });
 
     return NextResponse.json({ message: "Order cancelled successfully" });
   } catch (error) {

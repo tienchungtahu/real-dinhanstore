@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import Stripe from "stripe";
-import { getDataSource } from "@/lib/db/data-source";
-import { Order } from "@/lib/db/entities/Order";
-import { User } from "@/lib/db/entities/User";
-import { Product } from "@/lib/db/entities/Product";
+import prisma from "@/lib/db/prisma";
 import { sendOrderConfirmationEmail, OrderEmailData } from "@/lib/email/mailer";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
@@ -30,24 +27,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Payment not completed" }, { status: 400 });
     }
 
-    const dataSource = await getDataSource();
-    const orderRepo = dataSource.getRepository(Order);
-    const userRepo = dataSource.getRepository(User);
-    const productRepo = dataSource.getRepository(Product);
-
     // Find order
-    let order;
-    if (orderId) {
-      order = await orderRepo.findOne({
-        where: { id: parseInt(orderId) },
-        relations: ["items"],
-      });
-    } else if (session.metadata?.orderId) {
-      order = await orderRepo.findOne({
-        where: { id: parseInt(session.metadata.orderId) },
-        relations: ["items"],
-      });
+    const orderIdToFind = orderId || session.metadata?.orderId;
+    if (!orderIdToFind) {
+      return NextResponse.json({ error: "Order ID not found" }, { status: 400 });
     }
+
+    const order = await prisma.order.findUnique({
+      where: { id: parseInt(orderIdToFind) },
+      include: { items: true },
+    });
 
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
@@ -59,10 +48,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Update order
-    order.paymentStatus = "paid";
-    order.status = "processing";
-    order.stripeSessionId = sessionId;
-    await orderRepo.save(order);
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { paymentStatus: "paid", status: "processing", stripeSessionId: sessionId },
+    });
+
 
     // Send order confirmation email
     if (order.customerEmail) {
@@ -82,8 +72,8 @@ export async function POST(request: NextRequest) {
         shippingFee: Number(order.shippingFee),
         discount: Number(order.discount),
         total: Number(order.total),
-        paymentMethod: order.paymentMethod,
-        note: order.note,
+        paymentMethod: order.paymentMethod || "stripe",
+        note: order.note || undefined,
         createdAt: order.createdAt,
       };
 
@@ -95,10 +85,12 @@ export async function POST(request: NextRequest) {
     // Update product stock
     for (const item of order.items) {
       if (item.productId) {
-        const product = await productRepo.findOne({ where: { id: item.productId } });
+        const product = await prisma.product.findUnique({ where: { id: item.productId } });
         if (product) {
-          product.stock = Math.max(0, product.stock - item.quantity);
-          await productRepo.save(product);
+          await prisma.product.update({
+            where: { id: product.id },
+            data: { stock: Math.max(0, product.stock - item.quantity) },
+          });
         }
       }
     }
@@ -106,21 +98,24 @@ export async function POST(request: NextRequest) {
     // Get points used from session metadata
     const pointsUsed = parseInt(session.metadata?.pointsUsed || "0");
 
-    // Update user points: subtract used points, add earned points (15% of total)
-    const user = await userRepo.findOne({ where: { clerkId } });
+    // Update user points
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (user) {
       const pointsToAdd = Math.round(Number(order.total) * 0.15);
       const currentPoints = Number(user.points || 0);
-      // Subtract used points, add earned points
-      user.points = Math.max(0, currentPoints - pointsUsed + pointsToAdd);
-      await userRepo.save(user);
+      const newPoints = Math.max(0, currentPoints - pointsUsed + pointsToAdd);
+      
+      await prisma.user.update({
+        where: { clerkId },
+        data: { points: newPoints },
+      });
 
       return NextResponse.json({
         success: true,
         orderNumber: order.orderNumber,
         pointsUsed,
         pointsAdded: pointsToAdd,
-        totalPoints: user.points,
+        totalPoints: newPoints,
       });
     }
 

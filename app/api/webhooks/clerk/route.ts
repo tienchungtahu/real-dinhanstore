@@ -2,8 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { User } from "@/lib/db/entities/User";
+import prisma from "@/lib/db/prisma";
 
 export async function POST(req: Request) {
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
@@ -12,7 +11,6 @@ export async function POST(req: Request) {
     throw new Error("Please add CLERK_WEBHOOK_SECRET to .env.local");
   }
 
-  // Get the headers
   const headerPayload = await headers();
   const svix_id = headerPayload.get("svix-id");
   const svix_timestamp = headerPayload.get("svix-timestamp");
@@ -22,16 +20,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Missing svix headers" }, { status: 400 });
   }
 
-  // Get the body
   const payload = await req.json();
   const body = JSON.stringify(payload);
 
-  // Create a new Svix instance with your secret
   const wh = new Webhook(WEBHOOK_SECRET);
-
   let evt: WebhookEvent;
 
-  // Verify the payload with the headers
   try {
     evt = wh.verify(body, {
       "svix-id": svix_id,
@@ -46,28 +40,22 @@ export async function POST(req: Request) {
   const eventType = evt.type;
 
   try {
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-
     if (eventType === "user.created" || eventType === "user.updated") {
       const { id, email_addresses, first_name, last_name, image_url, phone_numbers } = evt.data;
 
       const primaryEmail = email_addresses?.find((e) => e.id === evt.data.primary_email_address_id);
       const primaryPhone = phone_numbers?.find((p) => p.id === evt.data.primary_phone_number_id);
 
-      // Check if user exists
-      let user = await userRepo.findOne({ where: { clerkId: id } });
-
-      if (user) {
-        // Update existing user
-        user.firstName = first_name || "";
-        user.lastName = last_name || "";
-        user.email = primaryEmail?.email_address || "";
-        user.phone = primaryPhone?.phone_number || "";
-        user.avatar = image_url || "";
-      } else {
-        // Create new user
-        user = userRepo.create({
+      await prisma.user.upsert({
+        where: { clerkId: id },
+        update: {
+          firstName: first_name || "",
+          lastName: last_name || "",
+          email: primaryEmail?.email_address || "",
+          phone: primaryPhone?.phone_number || "",
+          avatar: image_url || "",
+        },
+        create: {
           clerkId: id,
           firstName: first_name || "",
           lastName: last_name || "",
@@ -76,22 +64,20 @@ export async function POST(req: Request) {
           avatar: image_url || "",
           role: "customer",
           isActive: true,
-        });
-      }
+        },
+      });
 
-      await userRepo.save(user);
-      console.log(`User ${eventType === "user.created" ? "created" : "updated"}:`, user.email);
+      console.log(`User ${eventType === "user.created" ? "created" : "updated"}:`, primaryEmail?.email_address);
     }
 
     if (eventType === "user.deleted") {
       const { id } = evt.data;
       
-      const user = await userRepo.findOne({ where: { clerkId: id } });
-      if (user) {
-        user.isActive = false;
-        await userRepo.save(user);
-        console.log("User deactivated:", user.email);
-      }
+      await prisma.user.update({
+        where: { clerkId: id },
+        data: { isActive: false },
+      });
+      console.log("User deactivated:", id);
     }
 
     return NextResponse.json({ success: true });

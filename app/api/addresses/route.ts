@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Address } from "@/lib/db/entities/Address";
-import { User } from "@/lib/db/entities/User";
+import prisma from "@/lib/db/prisma";
 
 export async function GET() {
   try {
@@ -11,18 +9,14 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-    const addressRepo = dataSource.getRepository(Address);
-
-    const user = await userRepo.findOne({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (!user) {
       return NextResponse.json([]);
     }
 
-    const addresses = await addressRepo.find({
+    const addresses = await prisma.address.findMany({
       where: { userId: user.id },
-      order: { isDefault: "DESC", createdAt: "DESC" },
+      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
     });
 
     return NextResponse.json(addresses);
@@ -46,36 +40,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-    const addressRepo = dataSource.getRepository(Address);
-
-    const user = await userRepo.findOne({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // If this is default, unset other defaults
     if (isDefault) {
-      await addressRepo.update({ userId: user.id }, { isDefault: false });
+      await prisma.address.updateMany({
+        where: { userId: user.id },
+        data: { isDefault: false },
+      });
     }
 
     // If this is first address, make it default
-    const existingCount = await addressRepo.count({ where: { userId: user.id } });
+    const existingCount = await prisma.address.count({ where: { userId: user.id } });
     const shouldBeDefault = isDefault || existingCount === 0;
 
-    const address = addressRepo.create({
-      userId: user.id,
-      fullName,
-      phone,
-      province: province || "",
-      district: district || "",
-      ward: ward || "",
-      addressDetail,
-      isDefault: shouldBeDefault,
+    const address = await prisma.address.create({
+      data: {
+        userId: user.id,
+        fullName,
+        phone,
+        province: province || "",
+        district: district || "",
+        ward: ward || "",
+        addressDetail,
+        isDefault: shouldBeDefault,
+      },
     });
-
-    await addressRepo.save(address);
 
     return NextResponse.json(address, { status: 201 });
   } catch (error) {

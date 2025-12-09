@@ -7,9 +7,6 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-  experimental: {
-    serverComponentsExternalPackages: ["typeorm"],
-  },
 };
 
 export default withNextIntl(nextConfig);

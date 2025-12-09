@@ -1,19 +1,16 @@
 import { NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Product } from "@/lib/db/entities/Product";
-import { Category } from "@/lib/db/entities/Category";
+import prisma from "@/lib/db/prisma";
 
 export async function POST() {
   try {
-    const dataSource = await getDataSource();
-    const productRepo = dataSource.getRepository(Product);
-    const categoryRepo = dataSource.getRepository(Category);
-
-    // Delete all products first (due to foreign key)
-    await productRepo.createQueryBuilder().delete().execute();
-    
-    // Delete all categories
-    await categoryRepo.createQueryBuilder().delete().execute();
+    // Delete in correct order due to foreign keys
+    await prisma.cartItem.deleteMany();
+    await prisma.cart.deleteMany();
+    await prisma.orderItem.deleteMany();
+    await prisma.order.deleteMany();
+    await prisma.address.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.category.deleteMany();
 
     return NextResponse.json({
       success: true,

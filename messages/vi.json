@@ -308,6 +308,14 @@
     "noProductsDesc": "Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm",
     "error": "Đã xảy ra lỗi",
     "tryAgain": "Thử lại",
-    "refresh": "Làm mới"
+    "refresh": "Làm mới",
+    "categoryNames": {
+      "vot": "Vợt cầu lông",
+      "giay": "Giày thể thao",
+      "ao": "Áo cầu lông",
+      "balo": "Balo cầu lông",
+      "phukien": "Phụ kiện",
+      "may": "Máy căng vợt"
+    }
   }
 }

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { getDataSource } from "@/lib/db/data-source";
-import { Order } from "@/lib/db/entities/Order";
-import { User } from "@/lib/db/entities/User";
-import { Product } from "@/lib/db/entities/Product";
+import prisma from "@/lib/db/prisma";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || "";
@@ -22,52 +19,52 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    const dataSource = await getDataSource();
-    const orderRepo = dataSource.getRepository(Order);
-    const userRepo = dataSource.getRepository(User);
-    const productRepo = dataSource.getRepository(Product);
-
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       const orderId = session.metadata?.orderId;
       const clerkId = session.metadata?.clerkId;
 
       if (orderId) {
-        // Update order status
-        const order = await orderRepo.findOne({
+        const order = await prisma.order.findUnique({
           where: { id: parseInt(orderId) },
-          relations: ["items"],
+          include: { items: true },
         });
 
         if (order) {
-          order.paymentStatus = "paid";
-          order.status = "processing";
-          order.stripeSessionId = session.id;
-          await orderRepo.save(order);
+          await prisma.order.update({
+            where: { id: order.id },
+            data: {
+              paymentStatus: "paid",
+              status: "processing",
+              stripeSessionId: session.id,
+            },
+          });
 
           // Update product stock
           for (const item of order.items) {
             if (item.productId) {
-              const product = await productRepo.findOne({ where: { id: item.productId } });
+              const product = await prisma.product.findUnique({ where: { id: item.productId } });
               if (product) {
-                product.stock = Math.max(0, product.stock - item.quantity);
-                await productRepo.save(product);
+                await prisma.product.update({
+                  where: { id: product.id },
+                  data: { stock: Math.max(0, product.stock - item.quantity) },
+                });
               }
             }
           }
 
-          // Get points used from session metadata
+          // Update user points
           const pointsUsed = parseInt(session.metadata?.pointsUsed || "0");
-
-          // Update user points: subtract used points, add earned points (15% of total)
           if (clerkId) {
-            const user = await userRepo.findOne({ where: { clerkId } });
+            const user = await prisma.user.findUnique({ where: { clerkId } });
             if (user) {
               const pointsToAdd = Math.round(Number(order.total) * 0.15);
               const currentPoints = Number(user.points || 0);
-              user.points = Math.max(0, currentPoints - pointsUsed + pointsToAdd);
-              await userRepo.save(user);
-              console.log(`User ${user.email}: -${pointsUsed} used, +${pointsToAdd} earned = ${user.points} total`);
+              await prisma.user.update({
+                where: { clerkId },
+                data: { points: Math.max(0, currentPoints - pointsUsed + pointsToAdd) },
+              });
+              console.log(`User ${user.email}: -${pointsUsed} used, +${pointsToAdd} earned`);
             }
           }
 
@@ -81,11 +78,12 @@ export async function POST(request: NextRequest) {
       const orderId = session.metadata?.orderId;
 
       if (orderId) {
-        const order = await orderRepo.findOne({ where: { id: parseInt(orderId) } });
+        const order = await prisma.order.findUnique({ where: { id: parseInt(orderId) } });
         if (order && order.paymentStatus === "pending") {
-          order.paymentStatus = "failed";
-          order.status = "cancelled";
-          await orderRepo.save(order);
+          await prisma.order.update({
+            where: { id: order.id },
+            data: { paymentStatus: "failed", status: "cancelled" },
+          });
           console.log(`Order ${order.orderNumber} payment failed/expired`);
         }
       }

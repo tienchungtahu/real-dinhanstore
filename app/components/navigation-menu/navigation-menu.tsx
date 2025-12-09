@@ -33,6 +33,7 @@ const categoryIcons: Record<string, string> = {
 export function NavigationMenuDemo() {
   const t = useTranslations("nav");
   const tCommon = useTranslations("common");
+  const tProducts = useTranslations("products");
   const { categories, isLoaded, isLoading, getBrandsByCategory } = useProductStore();
   const { itemCount, openCart } = useCart();
 
@@ -50,14 +51,22 @@ export function NavigationMenuDemo() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const getCategoryName = (slug: string, fallbackName: string) => {
+    try {
+      return tProducts(`categoryNames.${slug}`);
+    } catch {
+      return fallbackName;
+    }
+  };
+
   const categoriesWithData = useMemo(() => {
     return categories.map((cat) => ({
       ...cat,
-      title: cat.name,
+      title: getCategoryName(cat.slug, cat.name),
       icon: categoryIcons[cat.slug] || "📁",
       items: getBrandsByCategory(cat.slug),
     }));
-  }, [categories, getBrandsByCategory]);
+  }, [categories, getBrandsByCategory, tProducts]);
 
   const firstThree = categoriesWithData.slice(0, 3);
   const otherCategories = categoriesWithData.slice(3);

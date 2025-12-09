@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Category } from "@/lib/db/entities/Category";
+import prisma from "@/lib/db/prisma";
 
 export async function GET() {
   try {
-    const dataSource = await getDataSource();
-    const categoryRepo = dataSource.getRepository(Category);
-    const categories = await categoryRepo.find();
-    return NextResponse.json(categories);
+    const categories = await prisma.category.findMany();
+    
+    // Convert subcategories from string to array
+    const categoriesWithSubcategories = categories.map((c) => ({
+      ...c,
+      subcategories: c.subcategories ? c.subcategories.split(",") : [],
+    }));
+    
+    return NextResponse.json(categoriesWithSubcategories);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
   }
@@ -15,14 +19,20 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const dataSource = await getDataSource();
-    const categoryRepo = dataSource.getRepository(Category);
     const body = await request.json();
+    const { subcategories, ...categoryData } = body;
     
-    const category = categoryRepo.create(body);
-    await categoryRepo.save(category);
+    const category = await prisma.category.create({
+      data: {
+        ...categoryData,
+        subcategories: Array.isArray(subcategories) ? subcategories.join(",") : subcategories,
+      },
+    });
     
-    return NextResponse.json(category, { status: 201 });
+    return NextResponse.json(
+      { ...category, subcategories: category.subcategories ? category.subcategories.split(",") : [] },
+      { status: 201 }
+    );
   } catch (error) {
     return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
   }

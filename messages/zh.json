@@ -303,6 +303,14 @@
     "noProductsDesc": "请尝试更改筛选条件或搜索关键词",
     "error": "发生错误",
     "tryAgain": "重试",
-    "refresh": "刷新"
+    "refresh": "刷新",
+    "categoryNames": {
+      "vot": "羽毛球拍",
+      "giay": "运动鞋",
+      "ao": "羽毛球服装",
+      "balo": "羽毛球包",
+      "phukien": "配件",
+      "may": "穿线机"
+    }
   }
 }

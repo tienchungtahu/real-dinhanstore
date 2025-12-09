@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { User } from "@/lib/db/entities/User";
+import prisma from "@/lib/db/prisma";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,22 +13,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-
-    // Check if user exists
-    let user = await userRepo.findOne({ where: { clerkId } });
-
-    if (user) {
-      // Update existing user
-      user.firstName = firstName;
-      user.lastName = lastName;
-      user.email = email;
-      user.phone = phone || user.phone;
-      user.avatar = avatar;
-    } else {
-      // Create new user
-      user = userRepo.create({
+    const user = await prisma.user.upsert({
+      where: { clerkId },
+      update: {
+        firstName,
+        lastName,
+        email,
+        phone: phone || undefined,
+        avatar,
+      },
+      create: {
         clerkId,
         firstName,
         lastName,
@@ -38,10 +31,8 @@ export async function POST(request: NextRequest) {
         avatar,
         role: "customer",
         isActive: true,
-      });
-    }
-
-    await userRepo.save(user);
+      },
+    });
 
     return NextResponse.json({ success: true, user });
   } catch (error) {

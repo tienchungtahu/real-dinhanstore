@@ -1,35 +1,24 @@
 import { NextResponse } from "next/server";
-import mysql from "mysql2/promise";
+import prisma from "@/lib/db/prisma";
 
 export async function POST() {
   try {
-    // Connect without database to create it
-    const connection = await mysql.createConnection({
-      host: process.env.DB_HOST || "localhost",
-      port: parseInt(process.env.DB_PORT || "3306"),
-      user: process.env.DB_USER || "root",
-      password: process.env.DB_PASSWORD || "",
-    });
-
-    const dbName = process.env.DB_NAME || "dinhanstore";
-
-    // Create database if not exists
-    await connection.execute(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await connection.end();
+    // Test connection and run migrations
+    await prisma.$queryRaw`SELECT 1`;
 
     return NextResponse.json({
       success: true,
-      message: `Database '${dbName}' created successfully!`,
-      nextStep: "Now call POST /api/db/seed to add sample data",
+      message: "Database connection successful! Use Prisma migrate to set up tables.",
+      nextStep: "Run 'npx prisma db push' to sync schema, then POST /api/db/seed to add sample data",
     });
   } catch (error: unknown) {
     console.error("Init error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       {
-        error: "Failed to create database",
+        error: "Failed to connect to database",
         message: errorMessage,
-        hint: "Make sure MySQL is running and credentials in .env.local are correct",
+        hint: "Check your DATABASE_URL in .env.local",
       },
       { status: 500 }
     );

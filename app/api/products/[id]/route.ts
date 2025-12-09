@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Product } from "@/lib/db/entities/Product";
-import { CartItem } from "@/lib/db/entities/CartItem";
+import prisma from "@/lib/db/prisma";
 
 // GET single product by ID
 export async function GET(
@@ -10,19 +8,19 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const dataSource = await getDataSource();
-    const productRepo = dataSource.getRepository(Product);
-
-    const product = await productRepo.findOne({
+    const product = await prisma.product.findUnique({
       where: { id: parseInt(id) },
-      relations: ["category"],
+      include: { category: true },
     });
 
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    return NextResponse.json(product);
+    return NextResponse.json({
+      ...product,
+      images: product.images ? product.images.split(",") : [],
+    });
   } catch (error) {
     console.error("Error fetching product:", error);
     return NextResponse.json(
@@ -39,22 +37,21 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const dataSource = await getDataSource();
-    const productRepo = dataSource.getRepository(Product);
     const body = await request.json();
 
-    const product = await productRepo.findOne({
+    const existing = await prisma.product.findUnique({
       where: { id: parseInt(id) },
-      relations: ["category"],
     });
 
-    if (!product) {
+    if (!existing) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
+
     // Update slug if name changed
-    if (body.name && body.name !== product.name) {
-      body.slug = body.name
+    let slug = body.slug;
+    if (body.name && body.name !== existing.name && !slug) {
+      slug = body.name
         .toLowerCase()
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
@@ -64,24 +61,23 @@ export async function PUT(
         .replace(/(^-|-$)/g, "");
     }
 
-    // Handle categoryId
-    const { categoryId, ...updateData } = body;
-    
-    Object.assign(product, updateData);
-    
-    if (categoryId) {
-      product.category = { id: categoryId } as typeof product.category;
-    }
-    
-    await productRepo.save(product);
+    const { categoryId, images, ...updateData } = body;
 
-    // Fetch updated product with relations
-    const updatedProduct = await productRepo.findOne({
+    const product = await prisma.product.update({
       where: { id: parseInt(id) },
-      relations: ["category"],
+      data: {
+        ...updateData,
+        ...(slug && { slug }),
+        ...(images && { images: Array.isArray(images) ? images.join(",") : images }),
+        ...(categoryId !== undefined && { categoryId: categoryId ? parseInt(categoryId) : null }),
+      },
+      include: { category: true },
     });
 
-    return NextResponse.json(updatedProduct);
+    return NextResponse.json({
+      ...product,
+      images: product.images ? product.images.split(",") : [],
+    });
   } catch (error) {
     console.error("Error updating product:", error);
     return NextResponse.json(
@@ -99,11 +95,8 @@ export async function DELETE(
   try {
     const { id } = await params;
     const productId = parseInt(id);
-    const dataSource = await getDataSource();
-    const productRepo = dataSource.getRepository(Product);
-    const cartItemRepo = dataSource.getRepository(CartItem);
 
-    const product = await productRepo.findOne({
+    const product = await prisma.product.findUnique({
       where: { id: productId },
     });
 
@@ -112,16 +105,16 @@ export async function DELETE(
     }
 
     // Delete related cart items first
-    await cartItemRepo.delete({ productId });
+    await prisma.cartItem.deleteMany({ where: { productId } });
 
     // Set productId to NULL for order_items (keep order history with productSnapshot)
-    await dataSource.query(
-      "UPDATE order_items SET productId = NULL WHERE productId = ?",
-      [productId]
-    );
+    await prisma.orderItem.updateMany({
+      where: { productId },
+      data: { productId: null },
+    });
 
     // Now delete the product
-    await productRepo.remove(product);
+    await prisma.product.delete({ where: { id: productId } });
 
     return NextResponse.json({ message: "Product deleted successfully" });
   } catch (error) {

@@ -1,78 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { User } from "@/lib/db/entities/User";
+import prisma from "@/lib/db/prisma";
 
-// POST /api/db/setup-admin
-// Body: { email: "admin@example.com", secretKey: "your-secret-key" }
-// Or just call with secretKey to make the first user admin
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { email, secretKey } = body;
 
-    // Simple secret key protection - change this in production!
     const SETUP_SECRET = process.env.ADMIN_SETUP_SECRET || "dinhanstore-setup-2024";
     
     if (secretKey !== SETUP_SECRET) {
-      return NextResponse.json(
-        { error: "Invalid secret key" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Invalid secret key" }, { status: 403 });
     }
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-
-    let user: User | null = null;
+    let user;
 
     if (email) {
-      // Find user by email
-      user = await userRepo.findOne({ where: { email } });
+      user = await prisma.user.findUnique({ where: { email } });
       if (!user) {
-        return NextResponse.json(
-          { error: `User with email ${email} not found` },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: `User with email ${email} not found` }, { status: 404 });
       }
     } else {
-      // Get the first user
-      user = await userRepo.findOne({ 
-        where: {},
-        order: { createdAt: "ASC" }
-      });
+      user = await prisma.user.findFirst({ orderBy: { createdAt: "asc" } });
       if (!user) {
-        return NextResponse.json(
-          { error: "No users found in database" },
-          { status: 404 }
-        );
+        return NextResponse.json({ error: "No users found in database" }, { status: 404 });
       }
     }
 
-    // Update role to admin
-    user.role = "admin";
-    await userRepo.save(user);
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: { role: "admin" },
+    });
 
     return NextResponse.json({
       success: true,
-      message: `User ${user.email} is now admin`,
+      message: `User ${updated.email} is now admin`,
       user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
+        id: updated.id,
+        email: updated.email,
+        firstName: updated.firstName,
+        lastName: updated.lastName,
+        role: updated.role,
       },
     });
   } catch (error) {
     console.error("Error setting up admin:", error);
-    return NextResponse.json(
-      { error: "Failed to setup admin" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to setup admin" }, { status: 500 });
   }
 }
 
-// GET - Check current admins
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -81,21 +56,16 @@ export async function GET(request: NextRequest) {
     const SETUP_SECRET = process.env.ADMIN_SETUP_SECRET || "dinhanstore-setup-2024";
     
     if (secretKey !== SETUP_SECRET) {
-      return NextResponse.json(
-        { error: "Invalid secret key" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Invalid secret key" }, { status: 403 });
     }
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-
-    const admins = await userRepo.find({
-      where: { role: "admin" },
-      select: ["id", "email", "firstName", "lastName", "role", "createdAt"],
-    });
-
-    const totalUsers = await userRepo.count();
+    const [admins, totalUsers] = await Promise.all([
+      prisma.user.findMany({
+        where: { role: "admin" },
+        select: { id: true, email: true, firstName: true, lastName: true, role: true, createdAt: true },
+      }),
+      prisma.user.count(),
+    ]);
 
     return NextResponse.json({
       totalUsers,
@@ -106,9 +76,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error checking admins:", error);
-    return NextResponse.json(
-      { error: "Failed to check admins" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to check admins" }, { status: 500 });
   }
 }

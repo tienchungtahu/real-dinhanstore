@@ -308,6 +308,14 @@
     "noProductsDesc": "Try changing filters or search keywords",
     "error": "An error occurred",
     "tryAgain": "Try again",
-    "refresh": "Refresh"
+    "refresh": "Refresh",
+    "categoryNames": {
+      "vot": "Badminton Rackets",
+      "giay": "Sports Shoes",
+      "ao": "Badminton Apparel",
+      "balo": "Badminton Bags",
+      "phukien": "Accessories",
+      "may": "Stringing Machines"
+    }
   }
 }

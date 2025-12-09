@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Address } from "@/lib/db/entities/Address";
-import { User } from "@/lib/db/entities/User";
+import prisma from "@/lib/db/prisma";
 
 export async function DELETE(
   request: NextRequest,
@@ -17,16 +15,12 @@ export async function DELETE(
     const { id } = await params;
     const addressId = parseInt(id);
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-    const addressRepo = dataSource.getRepository(Address);
-
-    const user = await userRepo.findOne({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const address = await addressRepo.findOne({
+    const address = await prisma.address.findFirst({
       where: { id: addressId, userId: user.id },
     });
 
@@ -34,7 +28,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Address not found" }, { status: 404 });
     }
 
-    await addressRepo.remove(address);
+    await prisma.address.delete({ where: { id: addressId } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

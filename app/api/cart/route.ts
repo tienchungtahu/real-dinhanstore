@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Cart } from "@/lib/db/entities/Cart";
-import { CartItem } from "@/lib/db/entities/CartItem";
-import { User } from "@/lib/db/entities/User";
-import { Product } from "@/lib/db/entities/Product";
+import prisma from "@/lib/db/prisma";
 
 // GET user's cart
 export async function GET() {
@@ -14,18 +10,14 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-    const cartRepo = dataSource.getRepository(Cart);
-
-    const user = await userRepo.findOne({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (!user) {
       return NextResponse.json({ items: [], discountCode: "", discountPercent: 0 });
     }
 
-    const cart = await cartRepo.findOne({
+    const cart = await prisma.cart.findFirst({
       where: { userId: user.id },
-      relations: ["items", "items.product"],
+      include: { items: { include: { product: true } } },
     });
 
     if (!cart) {
@@ -39,7 +31,7 @@ export async function GET() {
       slug: item.product.slug,
       price: Number(item.product.price),
       salePrice: item.product.salePrice ? Number(item.product.salePrice) : undefined,
-      image: item.product.images?.[0] || "",
+      image: item.product.images?.split(",")[0] || "",
       brand: item.product.brand || "",
       quantity: item.quantity,
       stock: item.product.stock,
@@ -56,6 +48,7 @@ export async function GET() {
   }
 }
 
+
 // POST - Save/Update cart
 export async function POST(request: NextRequest) {
   try {
@@ -67,60 +60,53 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { items, discountCode, discountPercent } = body;
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-    const cartRepo = dataSource.getRepository(Cart);
-    const cartItemRepo = dataSource.getRepository(CartItem);
-    const productRepo = dataSource.getRepository(Product);
-
-    const user = await userRepo.findOne({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Find or create cart
-    let cart = await cartRepo.findOne({
+    let cart = await prisma.cart.findFirst({
       where: { userId: user.id },
-      relations: ["items"],
+      include: { items: true },
     });
 
     if (!cart) {
-      cart = cartRepo.create({
-        userId: user.id,
-        discountCode: discountCode || "",
-        discountPercent: discountPercent || 0,
+      cart = await prisma.cart.create({
+        data: {
+          userId: user.id,
+          discountCode: discountCode || "",
+          discountPercent: discountPercent || 0,
+        },
+        include: { items: true },
       });
-      await cartRepo.save(cart);
     } else {
-      // Update discount info
-      cart.discountCode = discountCode || "";
-      cart.discountPercent = discountPercent || 0;
-      
       // Remove existing items
-      if (cart.items?.length > 0) {
-        await cartItemRepo.remove(cart.items);
-      }
-      await cartRepo.save(cart);
+      await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
+      
+      // Update discount info
+      await prisma.cart.update({
+        where: { id: cart.id },
+        data: {
+          discountCode: discountCode || "",
+          discountPercent: discountPercent || 0,
+        },
+      });
     }
 
     // Add new items
     if (items && items.length > 0) {
-      const cartItems: CartItem[] = [];
-      
       for (const item of items) {
-        const product = await productRepo.findOne({ where: { id: item.id } });
+        const product = await prisma.product.findUnique({ where: { id: item.id } });
         if (product) {
-          const cartItem = cartItemRepo.create({
-            cartId: cart.id,
-            productId: item.id,
-            quantity: item.quantity,
+          await prisma.cartItem.create({
+            data: {
+              cartId: cart.id,
+              productId: item.id,
+              quantity: item.quantity,
+            },
           });
-          cartItems.push(cartItem);
         }
-      }
-      
-      if (cartItems.length > 0) {
-        await cartItemRepo.save(cartItems);
       }
     }
 
@@ -139,19 +125,12 @@ export async function DELETE() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-    const cartRepo = dataSource.getRepository(Cart);
-
-    const user = await userRepo.findOne({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (!user) {
       return NextResponse.json({ success: true });
     }
 
-    const cart = await cartRepo.findOne({ where: { userId: user.id } });
-    if (cart) {
-      await cartRepo.remove(cart);
-    }
+    await prisma.cart.deleteMany({ where: { userId: user.id } });
 
     return NextResponse.json({ success: true });
   } catch (error) {

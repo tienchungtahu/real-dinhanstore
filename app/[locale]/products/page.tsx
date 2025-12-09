@@ -258,7 +258,7 @@ export default function ProductsPage() {
                         }`}
                       >
                         <span className="text-lg">{categoryIcons[cat.slug] || "📁"}</span>
-                        <span className="font-medium">{cat.name}</span>
+                        <span className="font-medium">{t(`categoryNames.${cat.slug}`) || cat.name}</span>
                       </button>
                     ))}
                   </div>

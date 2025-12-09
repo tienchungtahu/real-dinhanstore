@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Order } from "@/lib/db/entities/Order";
-import { User } from "@/lib/db/entities/User";
+import prisma from "@/lib/db/prisma";
 import { sendOrderConfirmationEmail, OrderEmailData } from "@/lib/email/mailer";
 
 export async function POST(request: NextRequest) {
@@ -19,29 +17,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Order ID required" }, { status: 400 });
     }
 
-    const dataSource = await getDataSource();
-    const orderRepo = dataSource.getRepository(Order);
-    const userRepo = dataSource.getRepository(User);
-
-    // Find order
-    const order = await orderRepo.findOne({
+    const order = await prisma.order.findUnique({
       where: { id: parseInt(orderId) },
-      relations: ["items"],
+      include: { items: true },
     });
 
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    // Check if already processed
     if (order.paymentStatus === "paid") {
       return NextResponse.json({ success: true, message: "Already processed" });
     }
 
-    // Update order status
-    order.paymentStatus = "paid";
-    order.status = "processing";
-    await orderRepo.save(order);
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { paymentStatus: "paid", status: "processing" },
+    });
 
     // Send order confirmation email
     if (order.customerEmail) {
@@ -61,8 +53,8 @@ export async function POST(request: NextRequest) {
         shippingFee: Number(order.shippingFee),
         discount: Number(order.discount),
         total: Number(order.total),
-        paymentMethod: order.paymentMethod,
-        note: order.note,
+        paymentMethod: order.paymentMethod || "vietqr",
+        note: order.note || undefined,
         createdAt: order.createdAt,
       };
 
@@ -72,17 +64,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user points (15% of total)
-    const user = await userRepo.findOne({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (user) {
       const pointsToAdd = Math.round(Number(order.total) * 0.15);
-      user.points = Number(user.points || 0) + pointsToAdd;
-      await userRepo.save(user);
+      const newPoints = Number(user.points || 0) + pointsToAdd;
+      
+      await prisma.user.update({
+        where: { clerkId },
+        data: { points: newPoints },
+      });
 
       return NextResponse.json({
         success: true,
         orderNumber: order.orderNumber,
         pointsAdded: pointsToAdd,
-        totalPoints: user.points,
+        totalPoints: newPoints,
       });
     }
 

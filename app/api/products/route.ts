@@ -1,12 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Product } from "@/lib/db/entities/Product";
+import prisma from "@/lib/db/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function GET(request: NextRequest) {
   try {
-    const dataSource = await getDataSource();
-    const productRepo = dataSource.getRepository(Product);
-
     const { searchParams } = new URL(request.url);
     const category = searchParams.get("category");
     const brand = searchParams.get("brand");
@@ -17,52 +14,50 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "20");
     const page = parseInt(searchParams.get("page") || "1");
     const sortBy = searchParams.get("sortBy") || "createdAt";
-    const sortOrder = searchParams.get("sortOrder") === "asc" ? "ASC" : "DESC";
+    const sortOrder = searchParams.get("sortOrder") === "asc" ? "asc" : "desc";
 
-    let query = productRepo
-      .createQueryBuilder("product")
-      .leftJoinAndSelect("product.category", "category")
-      .where("product.isActive = :isActive", { isActive: true });
+    const where: Prisma.ProductWhereInput = {
+      isActive: true,
+    };
 
     if (category) {
-      query = query.andWhere("category.slug = :category", { category });
+      where.category = { slug: category };
     }
     if (brand) {
-      query = query.andWhere("product.brand = :brand", { brand });
+      where.brand = brand;
     }
     if (featured === "true") {
-      query = query.andWhere("product.isFeatured = :isFeatured", {
-        isFeatured: true,
-      });
+      where.isFeatured = true;
     }
     if (search) {
-      query = query.andWhere("product.name LIKE :search", {
-        search: `%${search}%`,
-      });
+      where.name = { contains: search };
     }
-    if (minPrice) {
-      query = query.andWhere("product.price >= :minPrice", {
-        minPrice: parseFloat(minPrice),
-      });
-    }
-    if (maxPrice) {
-      query = query.andWhere("product.price <= :maxPrice", {
-        maxPrice: parseFloat(maxPrice),
-      });
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) where.price.gte = parseFloat(minPrice);
+      if (maxPrice) where.price.lte = parseFloat(maxPrice);
     }
 
-    // Get total count for pagination
-    const total = await query.getCount();
+    const [products, total] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: { category: true },
+        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+      prisma.product.count({ where }),
+    ]);
 
-    // Apply sorting and pagination
-    const products = await query
-      .orderBy(`product.${sortBy}`, sortOrder)
-      .skip((page - 1) * limit)
-      .take(limit)
-      .getMany();
+
+    // Convert images from string to array for response
+    const productsWithImages = products.map((p) => ({
+      ...p,
+      images: p.images ? p.images.split(",") : [],
+    }));
 
     return NextResponse.json({
-      products,
+      products: productsWithImages,
       pagination: {
         page,
         limit,
@@ -81,8 +76,6 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const dataSource = await getDataSource();
-    const productRepo = dataSource.getRepository(Product);
     const body = await request.json();
 
     // Generate slug from name
@@ -97,25 +90,22 @@ export async function POST(request: NextRequest) {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)/g, "");
 
-    // Handle categoryId
-    const { categoryId, ...productData } = body;
+    const { categoryId, images, ...productData } = body;
 
-    const productToCreate: Partial<Product> = {
-      ...productData,
-      slug,
-      category: categoryId ? { id: categoryId } : undefined,
-    };
-    
-    const result = await productRepo.insert(productToCreate);
-    const insertedId = result.identifiers[0].id;
-
-    // Fetch with relations
-    const savedProduct = await productRepo.findOne({
-      where: { id: insertedId },
-      relations: ["category"],
+    const product = await prisma.product.create({
+      data: {
+        ...productData,
+        slug,
+        images: Array.isArray(images) ? images.join(",") : images,
+        categoryId: categoryId ? parseInt(categoryId) : null,
+      },
+      include: { category: true },
     });
 
-    return NextResponse.json(savedProduct, { status: 201 });
+    return NextResponse.json(
+      { ...product, images: product.images ? product.images.split(",") : [] },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating product:", error);
     return NextResponse.json(

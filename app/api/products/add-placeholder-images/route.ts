@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Product } from "@/lib/db/entities/Product";
+import prisma from "@/lib/db/prisma";
 
-// Placeholder image URLs (you can replace with real images later)
 const placeholderImages = [
   "https://placehold.co/400x400/10b981/white?text=Badminton+1",
   "https://placehold.co/400x400/059669/white?text=Badminton+2",
@@ -12,18 +10,16 @@ const placeholderImages = [
 
 export async function POST() {
   try {
-    const dataSource = await getDataSource();
-    const productRepo = dataSource.getRepository(Product);
-
-    const products = await productRepo.find();
+    const products = await prisma.product.findMany();
     let updated = 0;
 
     for (const product of products) {
-      if (!product.images || product.images.length === 0) {
-        // Assign a random placeholder image
+      if (!product.images) {
         const randomImage = placeholderImages[Math.floor(Math.random() * placeholderImages.length)];
-        product.images = [randomImage];
-        await productRepo.save(product);
+        await prisma.product.update({
+          where: { id: product.id },
+          data: { images: randomImage },
+        });
         updated++;
       }
     }

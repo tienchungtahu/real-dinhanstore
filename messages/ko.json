@@ -303,6 +303,14 @@
     "noProductsDesc": "필터 또는 검색어를 변경해 보세요",
     "error": "오류가 발생했습니다",
     "tryAgain": "다시 시도",
-    "refresh": "새로고침"
+    "refresh": "새로고침",
+    "categoryNames": {
+      "vot": "배드민턴 라켓",
+      "giay": "스포츠 신발",
+      "ao": "배드민턴 의류",
+      "balo": "배드민턴 가방",
+      "phukien": "액세서리",
+      "may": "스트링 머신"
+    }
   }
 }

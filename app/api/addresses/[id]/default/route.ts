@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Address } from "@/lib/db/entities/Address";
-import { User } from "@/lib/db/entities/User";
+import prisma from "@/lib/db/prisma";
 
 export async function PUT(
   request: NextRequest,
@@ -17,16 +15,12 @@ export async function PUT(
     const { id } = await params;
     const addressId = parseInt(id);
 
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-    const addressRepo = dataSource.getRepository(Address);
-
-    const user = await userRepo.findOne({ where: { clerkId } });
+    const user = await prisma.user.findUnique({ where: { clerkId } });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const address = await addressRepo.findOne({
+    const address = await prisma.address.findFirst({
       where: { id: addressId, userId: user.id },
     });
 
@@ -35,13 +29,18 @@ export async function PUT(
     }
 
     // Unset all defaults for this user
-    await addressRepo.update({ userId: user.id }, { isDefault: false });
+    await prisma.address.updateMany({
+      where: { userId: user.id },
+      data: { isDefault: false },
+    });
 
     // Set this address as default
-    address.isDefault = true;
-    await addressRepo.save(address);
+    const updated = await prisma.address.update({
+      where: { id: addressId },
+      data: { isDefault: true },
+    });
 
-    return NextResponse.json(address);
+    return NextResponse.json(updated);
   } catch (error) {
     console.error("Error setting default address:", error);
     return NextResponse.json({ error: "Failed to set default address" }, { status: 500 });

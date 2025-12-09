@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { User } from "@/lib/db/entities/User";
+import prisma from "@/lib/db/prisma";
 
 export async function GET() {
   try {
-    const dataSource = await getDataSource();
-    const userRepo = dataSource.getRepository(User);
-
-    const users = await userRepo.find({
-      order: { createdAt: "DESC" },
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
       take: 20,
     });
 

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDataSource } from "@/lib/db/data-source";
-import { Product } from "@/lib/db/entities/Product";
+import prisma from "@/lib/db/prisma";
 
 // GET product by slug
 export async function GET(
@@ -9,12 +8,10 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const dataSource = await getDataSource();
-    const productRepo = dataSource.getRepository(Product);
 
-    const product = await productRepo.findOne({
+    const product = await prisma.product.findFirst({
       where: { slug, isActive: true },
-      relations: ["category"],
+      include: { category: true },
     });
 
     if (!product) {
@@ -22,22 +19,33 @@ export async function GET(
     }
 
     // Get related products from same category
-    let relatedProducts: Product[] = [];
-    if (product.category) {
-      relatedProducts = await productRepo
-        .createQueryBuilder("product")
-        .leftJoinAndSelect("product.category", "category")
-        .where("category.id = :categoryId", { categoryId: product.category.id })
-        .andWhere("product.id != :productId", { productId: product.id })
-        .andWhere("product.isActive = :isActive", { isActive: true })
-        .orderBy("RAND()")
-        .take(4)
-        .getMany();
+    let relatedProducts: typeof product[] = [];
+    if (product.categoryId) {
+      relatedProducts = await prisma.product.findMany({
+        where: {
+          categoryId: product.categoryId,
+          id: { not: product.id },
+          isActive: true,
+        },
+        include: { category: true },
+        take: 4,
+      });
     }
 
+    // Convert images from string to array
+    const productWithImages = {
+      ...product,
+      images: product.images ? product.images.split(",") : [],
+    };
+
+    const relatedWithImages = relatedProducts.map((p) => ({
+      ...p,
+      images: p.images ? p.images.split(",") : [],
+    }));
+
     return NextResponse.json({
-      product,
-      relatedProducts,
+      product: productWithImages,
+      relatedProducts: relatedWithImages,
     });
   } catch (error) {
     console.error("Error fetching product by slug:", error);
