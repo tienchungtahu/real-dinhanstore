@@ -332,6 +332,11 @@ export function NavigationMenuDemo() {
             <SearchBar />
           </div>
 
+          {/* Mobile Auth */}
+          <div className="p-4 border-b border-gray-100">
+            <UserButton />
+          </div>
+
           {/* Mobile Links */}
           <div className="p-4 space-y-2">
             <Link
