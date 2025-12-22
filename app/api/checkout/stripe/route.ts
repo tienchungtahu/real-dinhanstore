@@ -150,13 +150,33 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Get base URL - use request origin or hardcoded production URL
+    const requestUrl = request.headers.get("origin") || request.headers.get("referer");
+    let baseUrl = "https://nguyendinhan.id.vn"; // Production URL
+    
+    if (requestUrl) {
+      try {
+        const url = new URL(requestUrl);
+        baseUrl = url.origin;
+      } catch {
+        // Keep default
+      }
+    } else if (process.env.NEXT_PUBLIC_APP_URL) {
+      baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+      if (!baseUrl.startsWith("http")) {
+        baseUrl = `https://${baseUrl}`;
+      }
+    }
+
+    console.log("Using baseUrl for Stripe:", baseUrl);
+
     // Create Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/checkout/success?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/checkout/cancel?order_id=${order.id}`,
+      success_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
+      cancel_url: `${baseUrl}/checkout/cancel?order_id=${order.id}`,
       payment_intent_data: {
         description: "Dinhan Store - Badminton Equipment Purchase",
         metadata: { store: "Dinhan Store", clerkId, orderId: order.id.toString() },
