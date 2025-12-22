@@ -1,53 +1,67 @@
-"use client";
+"use client"
 
-import { useState, useMemo } from "react";
-import { Eye, Search, Filter, Trash2, X } from "lucide-react";
-import { useAdmin, Order } from "../context/AdminContext";
+import { useState, useMemo } from "react"
+import { Eye, Search, Filter, Trash2, X } from "lucide-react"
+import { useAdmin, Order } from "../context/AdminContext"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const statusOptions = [
-  { value: "pending", label: "Chờ xác nhận", color: "bg-yellow-100 text-yellow-700" },
-  { value: "processing", label: "Đang xử lý", color: "bg-blue-100 text-blue-700" },
-  { value: "shipped", label: "Đang giao", color: "bg-purple-100 text-purple-700" },
-  { value: "delivered", label: "Đã giao", color: "bg-green-100 text-green-700" },
-  { value: "cancelled", label: "Đã hủy", color: "bg-red-100 text-red-700" },
-];
+  { value: "pending", label: "Chờ xác nhận", variant: "outline" as const },
+  { value: "processing", label: "Đang xử lý", variant: "secondary" as const },
+  { value: "shipped", label: "Đang giao", variant: "default" as const },
+  { value: "delivered", label: "Đã giao", variant: "default" as const },
+  { value: "cancelled", label: "Đã hủy", variant: "destructive" as const },
+]
 
 export default function OrdersPage() {
-  const { orders, ordersLoading, updateOrderStatus, updateOrderNote, deleteOrder } = useAdmin();
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const { orders, ordersLoading, updateOrderStatus, updateOrderNote, deleteOrder } = useAdmin()
+  const [search, setSearch] = useState("")
+  const [filterStatus, setFilterStatus] = useState<string>("all")
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
-  // Filter orders locally
   const filteredOrders = useMemo(() => {
     return orders.filter((o) => {
       const matchSearch =
         o.orderNumber.toLowerCase().includes(search.toLowerCase()) ||
         o.customerName.toLowerCase().includes(search.toLowerCase()) ||
-        o.customerPhone.includes(search);
-      const matchStatus = filterStatus === "all" || o.status === filterStatus;
-      return matchSearch && matchStatus;
-    });
-  }, [orders, search, filterStatus]);
+        o.customerPhone.includes(search)
+      const matchStatus = filterStatus === "all" || o.status === filterStatus
+      return matchSearch && matchStatus
+    })
+  }, [orders, search, filterStatus])
 
   const handleUpdateStatus = async (orderId: number, newStatus: string) => {
-    const success = await updateOrderStatus(orderId, newStatus);
+    const success = await updateOrderStatus(orderId, newStatus)
     if (success && selectedOrder?.id === orderId) {
-      setSelectedOrder({ ...selectedOrder, status: newStatus });
+      setSelectedOrder({ ...selectedOrder, status: newStatus })
     }
-  };
+  }
 
   const handleDeleteOrder = async (orderId: number) => {
-    if (!confirm("Bạn có chắc muốn hủy đơn hàng này?")) return;
-    const success = await deleteOrder(orderId);
+    if (!confirm("Bạn có chắc muốn hủy đơn hàng này?")) return
+    const success = await deleteOrder(orderId)
     if (success && selectedOrder?.id === orderId) {
-      setSelectedOrder(null);
+      setSelectedOrder(null)
     }
-  };
+  }
 
-  const getStatusStyle = (status: string) => {
-    return statusOptions.find((s) => s.value === status)?.color || "bg-gray-100 text-gray-600";
-  };
+  const getStatusVariant = (status: string) => {
+    return statusOptions.find((s) => s.value === status)?.variant || "outline"
+  }
+
+  const getStatusLabel = (status: string) => {
+    return statusOptions.find((s) => s.value === status)?.label || status
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -56,125 +70,149 @@ export default function OrdersPage() {
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    });
-  };
+    })
+  }
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Quản lý đơn hàng</h1>
+    <div className="space-y-3">
+      <h1 className="text-xl md:text-2xl font-bold tracking-tight">Quản lý đơn hàng</h1>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm mb-6">
-        <div className="p-4 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo mã đơn, tên hoặc SĐT..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-col gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Tìm theo mã đơn, tên hoặc SĐT..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="h-9 px-3 border border-input rounded-md bg-background text-sm flex-1"
+              >
+                <option value="all">Tất cả trạng thái</option>
+                {statusOptions.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-400" />
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            >
-              <option value="all">Tất cả trạng thái</option>
-              {statusOptions.map((s) => (
-                <option key={s.value} value={s.value}>
-                  {s.label}
-                </option>
+        </CardHeader>
+        <CardContent>
+          {ordersLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <Skeleton className="h-4 w-[100px]" />
+                  <Skeleton className="h-4 w-[150px]" />
+                  <Skeleton className="h-4 w-[80px]" />
+                </div>
               ))}
-            </select>
-          </div>
-        </div>
-      </div>
+            </div>
+          ) : (
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Mã đơn</th>
+                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Khách hàng</th>
+                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Tổng tiền</th>
+                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Trạng thái</th>
+                      <th className="pb-3 text-left text-sm font-medium text-muted-foreground">Ngày đặt</th>
+                      <th className="pb-3 text-right text-sm font-medium text-muted-foreground">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredOrders.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-muted-foreground">
+                          Chưa có đơn hàng nào
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredOrders.map((order) => (
+                        <tr key={order.id} className="border-b last:border-0">
+                          <td className="py-3 text-sm font-medium">{order.orderNumber}</td>
+                          <td className="py-3">
+                            <div>
+                              <p className="text-sm font-medium">{order.customerName}</p>
+                              <p className="text-xs text-muted-foreground">{order.customerPhone}</p>
+                            </div>
+                          </td>
+                          <td className="py-3 text-sm font-medium">{Number(order.total).toLocaleString()}đ</td>
+                          <td className="py-3">
+                            <Badge variant={getStatusVariant(order.status)}>{getStatusLabel(order.status)}</Badge>
+                          </td>
+                          <td className="py-3 text-sm text-muted-foreground">{formatDate(order.createdAt)}</td>
+                          <td className="py-3">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              {order.status === "pending" && (
+                                <Button variant="ghost" size="icon" onClick={() => handleDeleteOrder(order.id)}>
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
 
-      {/* Orders Table */}
-      <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-        {ordersLoading ? (
-          <div className="p-8 flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mã đơn</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Khách hàng</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tổng tiền</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Trạng thái</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ngày đặt</th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
+              {/* Mobile card list */}
+              <div className="md:hidden space-y-3">
                 {filteredOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                      Chưa có đơn hàng nào
-                    </td>
-                  </tr>
+                  <p className="py-8 text-center text-muted-foreground">Chưa có đơn hàng nào</p>
                 ) : (
                   filteredOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">{order.orderNumber}</td>
-                      <td className="px-6 py-4">
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{order.customerName}</p>
-                          <p className="text-xs text-gray-500">{order.customerPhone}</p>
+                    <div key={order.id} className="p-3 border rounded-lg space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">{order.orderNumber}</span>
+                        <Badge variant={getStatusVariant(order.status)} className="text-xs">
+                          {getStatusLabel(order.status)}
+                        </Badge>
+                      </div>
+                      <div className="text-xs">
+                        <p className="font-medium">{order.customerName}</p>
+                        <p className="text-muted-foreground">{order.customerPhone}</p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs">
+                          <span className="font-medium">{Number(order.total).toLocaleString()}đ</span>
+                          <span className="text-muted-foreground ml-2">{formatDate(order.createdAt)}</span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                        {Number(order.total).toLocaleString()}đ
-                      </td>
-                      <td className="px-6 py-4">
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleUpdateStatus(order.id, e.target.value)}
-                          className={`px-2 py-1 text-xs rounded-full border-0 cursor-pointer ${getStatusStyle(order.status)}`}
-                        >
-                          {statusOptions.map((s) => (
-                            <option key={s.value} value={s.value}>{s.label}</option>
-                          ))}
-                        </select>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">{formatDate(order.createdAt)}</td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          <button
-                            onClick={() => setSelectedOrder(order)}
-                            className="p-2 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                            title="Xem chi tiết"
-                          >
+                        <div className="flex gap-1">
+                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setSelectedOrder(order)}>
                             <Eye className="w-4 h-4" />
-                          </button>
+                          </Button>
                           {order.status === "pending" && (
-                            <button
-                              onClick={() => handleDeleteOrder(order.id)}
-                              className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Hủy đơn"
-                            >
+                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteOrder(order.id)}>
                               <Trash2 className="w-4 h-4" />
-                            </button>
+                            </Button>
                           )}
                         </div>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   ))
                 )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
 
-      {/* Order Detail Modal */}
       {selectedOrder && (
         <OrderDetailModal
           order={selectedOrder}
@@ -184,8 +222,9 @@ export default function OrdersPage() {
         />
       )}
     </div>
-  );
+  )
 }
+
 
 function OrderDetailModal({
   order,
@@ -193,17 +232,13 @@ function OrderDetailModal({
   onUpdateStatus,
   onUpdateNote,
 }: {
-  order: Order;
-  onClose: () => void;
-  onUpdateStatus: (id: number, status: string) => void;
-  onUpdateNote: (id: number, note: string) => Promise<boolean>;
+  order: Order
+  onClose: () => void
+  onUpdateStatus: (id: number, status: string) => void
+  onUpdateNote: (id: number, note: string) => Promise<boolean>
 }) {
-  const [note, setNote] = useState(order.note || "");
-  const [saving, setSaving] = useState(false);
-
-  const getStatusStyle = (status: string) => {
-    return statusOptions.find((s) => s.value === status)?.color || "bg-gray-100 text-gray-600";
-  };
+  const [note, setNote] = useState(order.note || "")
+  const [saving, setSaving] = useState(false)
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("vi-VN", {
@@ -212,36 +247,34 @@ function OrderDetailModal({
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    });
-  };
+    })
+  }
 
   const saveNote = async () => {
-    setSaving(true);
-    await onUpdateNote(order.id, note);
-    setSaving(false);
-  };
+    setSaving(true)
+    await onUpdateNote(order.id, note)
+    setSaving(false)
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <Card className="w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
+        <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold">Đơn hàng #{order.orderNumber}</h2>
-            <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
+            <CardTitle>Đơn hàng #{order.orderNumber}</CardTitle>
+            <CardDescription>{formatDate(order.createdAt)}</CardDescription>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="p-6 space-y-6 overflow-y-auto flex-1">
-          {/* Status */}
+          <Button variant="ghost" size="icon" onClick={onClose}>
+            <X className="w-4 h-4" />
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4 overflow-y-auto flex-1">
           <div className="flex items-center gap-4">
-            <span className="text-sm font-medium text-gray-700">Trạng thái:</span>
+            <span className="text-sm font-medium">Trạng thái:</span>
             <select
               value={order.status}
               onChange={(e) => onUpdateStatus(order.id, e.target.value)}
-              className={`px-3 py-1.5 rounded-lg border-0 cursor-pointer ${getStatusStyle(order.status)}`}
+              className="h-8 px-3 border border-input rounded-md bg-background text-sm"
             >
               {statusOptions.map((s) => (
                 <option key={s.value} value={s.value}>{s.label}</option>
@@ -249,42 +282,40 @@ function OrderDetailModal({
             </select>
           </div>
 
-          {/* Customer Info */}
-          <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Thông tin khách hàng</h3>
+          <div className="bg-muted rounded-lg p-4">
+            <h3 className="text-sm font-semibold mb-3">Thông tin khách hàng</h3>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <span className="text-gray-500">Họ tên:</span>
+                <span className="text-muted-foreground">Họ tên:</span>
                 <p className="font-medium">{order.customerName}</p>
               </div>
               <div>
-                <span className="text-gray-500">Điện thoại:</span>
+                <span className="text-muted-foreground">Điện thoại:</span>
                 <p className="font-medium">{order.customerPhone}</p>
               </div>
               <div className="col-span-2">
-                <span className="text-gray-500">Email:</span>
+                <span className="text-muted-foreground">Email:</span>
                 <p className="font-medium">{order.customerEmail}</p>
               </div>
               <div className="col-span-2">
-                <span className="text-gray-500">Địa chỉ giao hàng:</span>
+                <span className="text-muted-foreground">Địa chỉ giao hàng:</span>
                 <p className="font-medium">{order.shippingAddress}</p>
               </div>
               <div>
-                <span className="text-gray-500">Thanh toán:</span>
+                <span className="text-muted-foreground">Thanh toán:</span>
                 <p className="font-medium">{order.paymentMethod || "COD"}</p>
               </div>
             </div>
           </div>
 
-          {/* Order Items */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Sản phẩm</h3>
+            <h3 className="text-sm font-semibold mb-3">Sản phẩm</h3>
             <div className="border rounded-lg divide-y">
               {order.items?.map((item) => (
                 <div key={item.id} className="p-3 flex justify-between items-center">
                   <div>
-                    <p className="font-medium text-gray-900">{item.productName}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium">{item.productName}</p>
+                    <p className="text-sm text-muted-foreground">
                       {Number(item.price).toLocaleString()}đ x {item.quantity}
                     </p>
                   </div>
@@ -294,50 +325,44 @@ function OrderDetailModal({
             </div>
           </div>
 
-          {/* Order Summary */}
-          <div className="bg-gray-50 rounded-lg p-4">
+          <div className="bg-muted rounded-lg p-4">
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-500">Tạm tính:</span>
+                <span className="text-muted-foreground">Tạm tính:</span>
                 <span>{Number(order.subtotal).toLocaleString()}đ</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-500">Phí vận chuyển:</span>
+                <span className="text-muted-foreground">Phí vận chuyển:</span>
                 <span>{Number(order.shippingFee).toLocaleString()}đ</span>
               </div>
               {order.discount > 0 && (
-                <div className="flex justify-between text-red-600">
+                <div className="flex justify-between text-destructive">
                   <span>Giảm giá:</span>
                   <span>-{Number(order.discount).toLocaleString()}đ</span>
                 </div>
               )}
               <div className="flex justify-between font-semibold text-lg pt-2 border-t">
                 <span>Tổng cộng:</span>
-                <span className="text-emerald-600">{Number(order.total).toLocaleString()}đ</span>
+                <span className="text-primary">{Number(order.total).toLocaleString()}đ</span>
               </div>
             </div>
           </div>
 
-          {/* Note */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">Ghi chú</h3>
+            <h3 className="text-sm font-semibold mb-2">Ghi chú</h3>
             <textarea
               value={note}
               onChange={(e) => setNote(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full px-3 py-2 border border-input rounded-md bg-background text-sm resize-none"
               placeholder="Thêm ghi chú cho đơn hàng..."
             />
-            <button
-              onClick={saveNote}
-              disabled={saving}
-              className="mt-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm"
-            >
+            <Button variant="secondary" size="sm" className="mt-2" onClick={saveNote} disabled={saving}>
               {saving ? "Đang lưu..." : "Lưu ghi chú"}
-            </button>
+            </Button>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
-  );
+  )
 }
