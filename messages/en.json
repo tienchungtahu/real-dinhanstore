@@ -235,6 +235,12 @@
     }
   },
   "auth": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "signOut": "Sign Out",
+    "myOrders": "My Orders",
+    "settings": "Account Settings",
+    "points": "points",
     "login": "Login",
     "register": "Register",
     "logout": "Logout",
@@ -275,7 +281,7 @@
   },
   "chat": {
     "title": "Online Support",
-    "subtitle": "Powered by Gemini AI",
+    "subtitle": "Powered by Groq AI",
     "placeholder": "Type a message...",
     "welcome": "Hello! 👋 I'm Dinhan Store's AI assistant. I can help you learn about badminton products, store policies, or assist with orders. How can I help you?",
     "quickReplies": {

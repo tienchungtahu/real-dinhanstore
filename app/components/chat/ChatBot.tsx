@@ -66,7 +66,7 @@ export function ChatBot() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/chat/gemini", {
+      const response = await fetch("/api/chat/groq", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -137,19 +137,19 @@ export function ChatBot() {
       {/* Chat Window */}
       {isOpen && (
         <div
-          className={`fixed bottom-6 left-6 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transition-all duration-300 ${
+          className={`fixed bottom-6 left-6 z-50 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden transition-all duration-300 flex flex-col ${
             isMinimized ? "w-72 h-16" : "w-[360px] sm:w-96 h-[500px] sm:h-[600px] max-h-[80vh]"
           }`}
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+          <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 flex items-center justify-between flex-shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
                 <Bot className="w-6 h-6 text-white" />
               </div>
-              <div className="text-white">
-                <h3 className="font-bold">{t("title")}</h3>
-                <p className="text-xs text-white/80">{t("subtitle")}</p>
+              <div className="text-white min-w-0">
+                <h3 className="font-bold text-sm truncate">{t("title")}</h3>
+                <p className="text-xs text-white/80 truncate">{t("subtitle")}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -171,7 +171,7 @@ export function ChatBot() {
           {!isMinimized && (
             <>
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4 h-[calc(100%-180px)]">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {messages.map((message) => (
                   <div
                     key={message.id}

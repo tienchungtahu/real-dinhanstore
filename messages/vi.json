@@ -235,6 +235,12 @@
     }
   },
   "auth": {
+    "signIn": "Đăng nhập",
+    "signUp": "Đăng ký",
+    "signOut": "Đăng xuất",
+    "myOrders": "Đơn hàng của tôi",
+    "settings": "Cài đặt tài khoản",
+    "points": "điểm",
     "login": "Đăng nhập",
     "register": "Đăng ký",
     "logout": "Đăng xuất",
@@ -275,7 +281,7 @@
   },
   "chat": {
     "title": "Hỗ trợ trực tuyến",
-    "subtitle": "Powered by Gemini AI",
+    "subtitle": "Powered by Groq AI",
     "placeholder": "Nhập tin nhắn...",
     "welcome": "Xin chào! 👋 Tôi là trợ lý AI của Dinhan Store. Tôi có thể giúp bạn tìm hiểu về sản phẩm cầu lông, chính sách cửa hàng, hoặc hỗ trợ đặt hàng. Bạn cần hỗ trợ gì ạ?",
     "quickReplies": {

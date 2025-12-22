@@ -230,6 +230,12 @@
     }
   },
   "auth": {
+    "signIn": "ログイン",
+    "signUp": "新規登録",
+    "signOut": "ログアウト",
+    "myOrders": "注文履歴",
+    "settings": "アカウント設定",
+    "points": "ポイント",
     "login": "ログイン",
     "register": "新規登録",
     "logout": "ログアウト",
@@ -270,7 +276,7 @@
   },
   "chat": {
     "title": "オンラインサポート",
-    "subtitle": "Gemini AIによるサポート",
+    "subtitle": "Groq AIによるサポート",
     "placeholder": "メッセージを入力...",
     "welcome": "こんにちは！👋 Dinhan StoreのAIアシスタントです。バドミントン用品、ストアポリシー、ご注文のサポートなど、お気軽にお問い合わせください。",
     "quickReplies": {

@@ -109,8 +109,8 @@ export function Footer() {
                   <MapPin className="w-5 h-5 text-emerald-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">123 Đường ABC, Quận 1</p>
-                  <p className="text-sm text-gray-400">TP. Hồ Chí Minh</p>
+                  <p className="text-sm text-gray-400">234 Hoàng Quốc Việt, Cầu Giấy {"."} {" "} Hà Nội</p>
+                  <p className="text-sm text-gray-400">TP. Hà Nội</p>
                 </div>
               </li>
               <li className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export function Footer() {
                 <div>
                   <p className="text-sm text-gray-400">{t("hotline")}</p>
                   <a href="tel:0901234567" className="font-semibold text-white hover:text-emerald-400 transition-colors">
-                    0901 234 567
+                    0347 893 528
                   </a>
                 </div>
               </li>
