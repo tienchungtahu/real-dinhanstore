@@ -617,12 +617,12 @@ export function CartModal() {
                 <button
                   onClick={() => {
                     setSelectedPayment("vietqr");
-                    const bankId = "970418";
-                    const accountNo = "21510003994259";
-                    const accountName = "TRAN TIEN CHUNG";
+                    const bankId = process.env.NEXT_PUBLIC_VIETQR_BANK_ID || "970418";
+                    const accountNo = process.env.NEXT_PUBLIC_VIETQR_BANK_ACCOUNT || "";
+                    const accountName = process.env.NEXT_PUBLIC_VIETQR_NAME || "";
                     const amount = Math.round(total);
                     const description = `DH${Date.now()}`;
-                    const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName)}`;
+                    const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.png?amount=${amount}&addInfo=${encodeURIComponent(description)}&accountName=${encodeURIComponent(accountName || "")}`;
                     setVietQRData({ qrUrl, bankInfo: `MB Bank - ${accountNo} - ${accountName}` });
                   }}
                   className={`w-full p-5 border-2 rounded-2xl flex items-center gap-4 transition-all ${
