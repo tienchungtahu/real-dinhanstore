@@ -9,6 +9,7 @@ import {
   Database,
   Users,
   Command,
+  Percent,
 } from "lucide-react"
 import {
   Sidebar,
@@ -52,6 +53,11 @@ const sidebarData = {
           title: "Đơn hàng",
           url: "/admin/orders",
           icon: ShoppingCart,
+        },
+        {
+          title: "Giảm giá",
+          url: "/admin/discounts",
+          icon: Percent,
         },
         {
           title: "Thống kê",
