@@ -14,6 +14,7 @@ import {
   MoreHorizontal,
   Loader2,
   Sparkles,
+  BookOpen,
 } from "lucide-react";
 import { LocaleDropdown } from "@/app/components/features/i18n/locale-dropdown";
 import { UserButton } from "@/app/components/auth/UserButton";
@@ -78,9 +79,8 @@ export function NavigationMenuDemo() {
   };
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? "bg-white/95 backdrop-blur-lg shadow-lg" : "bg-white/80 backdrop-blur-sm"
-    }`}>
+    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-white/95 backdrop-blur-lg shadow-lg" : "bg-white/80 backdrop-blur-sm"
+      }`}>
       {/* Main Navigation */}
       <div className="border-b border-gray-100/50">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -109,11 +109,18 @@ export function NavigationMenuDemo() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
+              <Link
+                href="/blog"
+                className="hidden lg:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>Blog</span>
+              </Link>
               <div className="hidden sm:block">
                 <UserButton />
               </div>
               <LocaleDropdown />
-              
+
               {/* Cart Button */}
               <button
                 onClick={openCart}
@@ -168,11 +175,10 @@ export function NavigationMenuDemo() {
                       setSelectedOtherCategory(null);
                       setActiveCategory(activeCategory === category.slug ? null : category.slug);
                     }}
-                    className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
-                      activeCategory === category.slug
-                        ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
-                        : "text-gray-600 hover:bg-white hover:text-emerald-600 hover:shadow-md"
-                    }`}
+                    className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${activeCategory === category.slug
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
+                      : "text-gray-600 hover:bg-white hover:text-emerald-600 hover:shadow-md"
+                      }`}
                   >
                     <span className="text-base">{category.icon}</span>
                     <span>{category.title}</span>
@@ -188,11 +194,10 @@ export function NavigationMenuDemo() {
                       setShowOthers(!showOthers);
                       if (!showOthers) setSelectedOtherCategory(otherCategories[0]?.slug || null);
                     }}
-                    className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${
-                      showOthers
-                        ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
-                        : "text-gray-600 hover:bg-white hover:text-emerald-600 hover:shadow-md"
-                    }`}
+                    className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 ${showOthers
+                      ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
+                      : "text-gray-600 hover:bg-white hover:text-emerald-600 hover:shadow-md"
+                      }`}
                   >
                     <MoreHorizontal className="w-4 h-4" />
                     <span>{tCommon("viewMore")}</span>
@@ -260,11 +265,10 @@ export function NavigationMenuDemo() {
                           <button
                             key={category.slug}
                             onClick={() => setSelectedOtherCategory(category.slug)}
-                            className={`w-full flex items-center justify-between px-4 py-3 text-sm rounded-xl transition-all ${
-                              selectedOtherCategory === category.slug
-                                ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md"
-                                : "text-gray-600 hover:bg-white hover:shadow-sm"
-                            }`}
+                            className={`w-full flex items-center justify-between px-4 py-3 text-sm rounded-xl transition-all ${selectedOtherCategory === category.slug
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md"
+                              : "text-gray-600 hover:bg-white hover:shadow-sm"
+                              }`}
                           >
                             <div className="flex items-center gap-2">
                               <span>{category.icon}</span>
@@ -353,6 +357,13 @@ export function NavigationMenuDemo() {
             >
               <Sparkles className="w-5 h-5" /> {t("products")}
             </Link>
+            <Link
+              href="/blog"
+              className="flex items-center gap-3 py-3 px-4 text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-2xl font-medium transition-all"
+              onClick={() => setIsOpen(false)}
+            >
+              <BookOpen className="w-5 h-5" /> Blog
+            </Link>
           </div>
 
           {/* Mobile Categories */}
@@ -367,11 +378,10 @@ export function NavigationMenuDemo() {
                 {categoriesWithData.map((category) => (
                   <div key={category.slug}>
                     <button
-                      className={`flex items-center justify-between w-full p-4 rounded-2xl text-left transition-all ${
-                        mobileExpanded === category.slug
-                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
-                          : "text-gray-700 hover:bg-gray-50"
-                      }`}
+                      className={`flex items-center justify-between w-full p-4 rounded-2xl text-left transition-all ${mobileExpanded === category.slug
+                        ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg"
+                        : "text-gray-700 hover:bg-gray-50"
+                        }`}
                       onClick={() => setMobileExpanded(mobileExpanded === category.slug ? null : category.slug)}
                     >
                       <div className="flex items-center gap-3">

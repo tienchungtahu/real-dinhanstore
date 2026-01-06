@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { Package, Eye } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useLocale } from "next-intl";
 
 interface OrderItem {
   id: number;
@@ -34,8 +34,7 @@ export default function OrdersPage() {
   const { user, isLoaded } = useUser();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const pathname = usePathname();
-  const locale = pathname.split("/")[1];
+  const locale = useLocale();
 
   useEffect(() => {
     if (isLoaded && user) {
@@ -100,9 +99,8 @@ export default function OrdersPage() {
                   </div>
                   <div className="flex items-center gap-4">
                     <span
-                      className={`px-3 py-1 text-sm rounded-full ${
-                        statusLabels[order.status]?.color || "bg-gray-100"
-                      }`}
+                      className={`px-3 py-1 text-sm rounded-full ${statusLabels[order.status]?.color || "bg-gray-100"
+                        }`}
                     >
                       {statusLabels[order.status]?.label || order.status}
                     </span>

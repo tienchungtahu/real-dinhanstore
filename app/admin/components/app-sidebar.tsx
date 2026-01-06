@@ -10,6 +10,7 @@ import {
   Users,
   Command,
   Percent,
+  BookOpen,
 } from "lucide-react"
 import {
   Sidebar,
@@ -63,6 +64,11 @@ const sidebarData = {
           title: "Thống kê",
           url: "/admin/analytics",
           icon: BarChart3,
+        },
+        {
+          title: "Bài viết",
+          url: "/admin/posts",
+          icon: BookOpen,
         },
       ],
     },
