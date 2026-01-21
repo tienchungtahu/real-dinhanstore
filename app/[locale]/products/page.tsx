@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Sparkles,
   Filter,
+  Pencil,
 } from "lucide-react";
 import { ProductCard } from "@/app/components/ui/ProductCard";
 import { useProductStore } from "@/app/hooks/useProductStore";
@@ -44,6 +45,7 @@ export default function ProductsPage() {
     error,
     refreshData,
     getFilteredProducts,
+    getBrandsByCategory,
   } = useProductStore();
 
   const [search, setSearch] = useState("");
@@ -153,9 +155,8 @@ export default function ProductsPage() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all lg:hidden ${
-                showFilters ? "bg-emerald-600 text-white" : "bg-white text-gray-700 border border-gray-200 hover:border-emerald-500"
-              }`}
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all lg:hidden ${showFilters ? "bg-emerald-600 text-white" : "bg-white text-gray-700 border border-gray-200 hover:border-emerald-500"
+                }`}
             >
               <Filter className="w-5 h-5" />
               {t("filters")}
@@ -163,7 +164,7 @@ export default function ProductsPage() {
                 <span className="w-2 h-2 bg-emerald-400 rounded-full" />
               )}
             </button>
-            
+
             {hasActiveFilters && (
               <button
                 onClick={clearFilters}
@@ -179,7 +180,7 @@ export default function ProductsPage() {
             <span className="text-sm text-gray-500">
               {t("productCount", { count: filteredProducts.length })}
             </span>
-            
+
             {/* Grid toggle */}
             <div className="hidden lg:flex items-center gap-1 p-1 bg-white rounded-xl border border-gray-200">
               <button
@@ -235,11 +236,10 @@ export default function ProductsPage() {
                         setSelectedCategory("all");
                         setCurrentPage(1);
                       }}
-                      className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left transition-all ${
-                        selectedCategory === "all"
-                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
-                          : "text-gray-600 hover:bg-gray-50"
-                      }`}
+                      className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left transition-all ${selectedCategory === "all"
+                        ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
+                        : "text-gray-600 hover:bg-gray-50"
+                        }`}
                     >
                       <span className="text-lg">✨</span>
                       <span className="font-medium">{t("allCategories")}</span>
@@ -251,11 +251,10 @@ export default function ProductsPage() {
                           setSelectedCategory(cat.slug);
                           setCurrentPage(1);
                         }}
-                        className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left transition-all ${
-                          selectedCategory === cat.slug
-                            ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
-                            : "text-gray-600 hover:bg-gray-50"
-                        }`}
+                        className={`flex items-center gap-3 w-full px-4 py-3 rounded-xl text-left transition-all ${selectedCategory === cat.slug
+                          ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
+                          : "text-gray-600 hover:bg-gray-50"
+                          }`}
                       >
                         <span className="text-lg">{categoryIcons[cat.slug] || "📁"}</span>
                         <span className="font-medium">{t(`categoryNames.${cat.slug}`) || cat.name}</span>
@@ -264,32 +263,41 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-                {/* Brands */}
+                {/* Brands/Subcategories */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-                  <h3 className="font-bold text-gray-900 mb-4">{t("brands")}</h3>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {allBrands.map((brand) => (
+                  <h3 className="font-bold text-gray-900 mb-4">{t("subcategories")}</h3>
+                  <div className="space-y-3 max-h-64 overflow-y-auto pt-2">
+                    {getBrandsByCategory(selectedCategory).map((brand) => (
                       <label
                         key={brand}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-all ${
-                          selectedBrands.includes(brand)
-                            ? "bg-emerald-50 border border-emerald-200"
-                            : "hover:bg-gray-50"
-                        }`}
+                        className="flex items-center gap-3 cursor-pointer group"
                       >
+                        <div className={`
+                          w-5 h-5 rounded-md border flex items-center justify-center transition-colors
+                          ${selectedBrands.includes(brand)
+                            ? "bg-emerald-600 border-emerald-600"
+                            : "border-gray-300 bg-white group-hover:border-emerald-500"}
+                        `}>
+                          {selectedBrands.includes(brand) && (
+                            <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
                         <input
                           type="checkbox"
+                          className="hidden"
                           checked={selectedBrands.includes(brand)}
                           onChange={() => toggleBrand(brand)}
-                          className="w-5 h-5 text-emerald-600 rounded-lg border-gray-300 focus:ring-emerald-500"
                         />
-                        <span className={`font-medium ${selectedBrands.includes(brand) ? "text-emerald-700" : "text-gray-600"}`}>
+                        <span className={`text-sm ${selectedBrands.includes(brand) ? "font-medium text-gray-900" : "text-gray-600 group-hover:text-gray-900"}`}>
                           {brand}
                         </span>
                       </label>
                     ))}
                   </div>
                 </div>
+
 
                 {/* Price Range */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
@@ -302,18 +310,48 @@ export default function ProductsPage() {
                       step="100000"
                       value={priceRange[1]}
                       onChange={(e) => {
-                        setPriceRange([priceRange[0], Number(e.target.value)]);
-                        setCurrentPage(1);
+                        const val = Number(e.target.value);
+                        if (val >= priceRange[0]) {
+                          setPriceRange([priceRange[0], val]);
+                          setCurrentPage(1);
+                        }
                       }}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                     />
-                    <div className="flex items-center justify-between">
-                      <span className="px-3 py-1.5 bg-gray-100 rounded-lg text-sm font-medium text-gray-600">
-                        {priceRange[0].toLocaleString()}đ
-                      </span>
-                      <span className="px-3 py-1.5 bg-emerald-100 rounded-lg text-sm font-medium text-emerald-700">
-                        {priceRange[1].toLocaleString()}đ
-                      </span>
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg group hover:bg-white hover:ring-2 hover:ring-emerald-500/20 transition-all">
+                        <input
+                          type="text"
+                          value={priceRange[0].toLocaleString()}
+                          onChange={(e) => {
+                            const val = Number(e.target.value.replace(/\D/g, ""));
+                            if (val <= priceRange[1]) {
+                              setPriceRange([val, priceRange[1]]);
+                              setCurrentPage(1);
+                            }
+                          }}
+                          className="w-20 bg-transparent text-sm font-medium text-gray-600 focus:outline-none"
+                        />
+                        <span className="text-gray-400">đ</span>
+                        <Pencil className="w-3 h-3 text-gray-400 group-hover:text-emerald-500" />
+                      </div>
+
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-lg group hover:bg-white hover:ring-2 hover:ring-emerald-500/20 transition-all">
+                        <input
+                          type="text"
+                          value={priceRange[1].toLocaleString()}
+                          onChange={(e) => {
+                            const val = Number(e.target.value.replace(/\D/g, ""));
+                            if (val >= priceRange[0] && val <= 10000000) {
+                              setPriceRange([priceRange[0], val]);
+                              setCurrentPage(1);
+                            }
+                          }}
+                          className="w-20 bg-transparent text-sm font-medium text-emerald-700 focus:outline-none"
+                        />
+                        <span className="text-emerald-600">đ</span>
+                        <Pencil className="w-3 h-3 text-emerald-600/50 group-hover:text-emerald-600" />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -374,7 +412,7 @@ export default function ProductsPage() {
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
-                    
+
                     <div className="flex items-center gap-1">
                       {[...Array(Math.min(5, totalPages))].map((_, i) => {
                         let pageNum;
@@ -387,16 +425,15 @@ export default function ProductsPage() {
                         } else {
                           pageNum = currentPage - 2 + i;
                         }
-                        
+
                         return (
                           <button
                             key={pageNum}
                             onClick={() => setCurrentPage(pageNum)}
-                            className={`w-12 h-12 rounded-xl font-semibold transition-all ${
-                              currentPage === pageNum
-                                ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
-                                : "bg-white border border-gray-200 text-gray-600 hover:border-emerald-500"
-                            }`}
+                            className={`w-12 h-12 rounded-xl font-semibold transition-all ${currentPage === pageNum
+                              ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-lg shadow-emerald-500/30"
+                              : "bg-white border border-gray-200 text-gray-600 hover:border-emerald-500"
+                              }`}
                           >
                             {pageNum}
                           </button>

@@ -15,6 +15,7 @@ import {
   Loader2,
   Sparkles,
   BookOpen,
+  Home,
 } from "lucide-react";
 import { LocaleDropdown } from "@/app/components/features/i18n/locale-dropdown";
 import { UserButton } from "@/app/components/auth/UserButton";
@@ -114,7 +115,7 @@ export function NavigationMenuDemo() {
                 className="hidden lg:flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all"
               >
                 <BookOpen className="w-4 h-4" />
-                <span>Blog</span>
+                <span>Bài viết</span>
               </Link>
               <div className="hidden sm:block">
                 <UserButton />
@@ -157,13 +158,22 @@ export function NavigationMenuDemo() {
               </div>
             ) : (
               <div className="flex items-center gap-1">
+                {/* Home */}
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl text-gray-600 hover:bg-white hover:text-emerald-600 hover:shadow-md transition-all duration-300"
+                >
+                  <Home className="w-4 h-4" />
+                  {t("home")}
+                </Link>
+
                 {/* All Products */}
                 <Link
                   href="/products"
                   className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl text-gray-600 hover:bg-white hover:text-emerald-600 hover:shadow-md transition-all duration-300"
                 >
                   <Sparkles className="w-4 h-4" />
-                  {tCommon("all")}
+                  {t("products")}
                 </Link>
 
                 {/* First 3 categories */}

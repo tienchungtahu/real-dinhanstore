@@ -308,6 +308,7 @@
     "categories": "Categories",
     "allCategories": "All",
     "brands": "Brands",
+    "subcategories": "Subcategories",
     "priceRange": "Price Range",
     "viewProducts": "View {count} products",
     "noProducts": "No products found",

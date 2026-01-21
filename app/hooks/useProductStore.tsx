@@ -167,10 +167,14 @@ export function ProductStoreProvider({ children }: { children: React.ReactNode }
     (search: string) => {
       const searchLower = search.toLowerCase();
       return products.filter(
+
         (p) =>
           p.name.toLowerCase().includes(searchLower) ||
           p.description?.toLowerCase().includes(searchLower) ||
-          p.brand?.toLowerCase().includes(searchLower)
+          p.brand?.toLowerCase().includes(searchLower) ||
+          p.slug.toLowerCase().includes(searchLower) ||
+          p.category?.name.toLowerCase().includes(searchLower) ||
+          p.category?.slug.toLowerCase().includes(searchLower)
       );
     },
     [products]
@@ -193,7 +197,11 @@ export function ProductStoreProvider({ children }: { children: React.ReactNode }
         filtered = filtered.filter(
           (p) =>
             p.name.toLowerCase().includes(searchLower) ||
-            p.description?.toLowerCase().includes(searchLower)
+            p.description?.toLowerCase().includes(searchLower) ||
+            p.brand?.toLowerCase().includes(searchLower) ||
+            p.slug.toLowerCase().includes(searchLower) ||
+            p.category?.name.toLowerCase().includes(searchLower) ||
+            p.category?.slug.toLowerCase().includes(searchLower)
         );
       }
 
@@ -216,8 +224,8 @@ export function ProductStoreProvider({ children }: { children: React.ReactNode }
 
   const getBrandsByCategory = useCallback(
     (categorySlug: string) => {
-      const categoryProducts = categorySlug === "all" 
-        ? products 
+      const categoryProducts = categorySlug === "all"
+        ? products
         : products.filter((p) => p.category?.slug === categorySlug);
       return [...new Set(categoryProducts.map((p) => p.brand).filter(Boolean))] as string[];
     },

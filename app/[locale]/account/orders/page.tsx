@@ -67,7 +67,7 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 py-12">
       <div className="bg-white rounded-xl shadow-sm">
         <div className="p-6 border-b">
           <h1 className="text-2xl font-bold text-gray-900">Đơn hàng của tôi</h1>

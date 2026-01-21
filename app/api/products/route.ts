@@ -30,7 +30,13 @@ export async function GET(request: NextRequest) {
       where.isFeatured = true;
     }
     if (search) {
-      where.name = { contains: search };
+      where.OR = [
+        { name: { contains: search } },
+        { slug: { contains: search } },
+        { brand: { contains: search } },
+        { category: { name: { contains: search } } },
+        { category: { slug: { contains: search } } },
+      ];
     }
     if (minPrice || maxPrice) {
       where.price = {};

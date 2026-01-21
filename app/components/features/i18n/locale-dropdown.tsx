@@ -29,12 +29,12 @@ export function LocaleDropdown({ className, ...props }: LocaleSwitcherProps) {
 
   const handleLocaleChange = (newLocale: string) => {
     if (newLocale === currentLocale) return;
-    
+
     setIsPending(true);
-    
+
     // Set cookie for locale preference
     document.cookie = `NEXT_LOCALE=${newLocale};path=/;max-age=31536000`;
-    
+
     // Full page reload to apply new locale
     window.location.reload();
   };
@@ -44,16 +44,18 @@ export function LocaleDropdown({ className, ...props }: LocaleSwitcherProps) {
       <DropdownMenuTrigger disabled={isPending} asChild>
         <Button
           variant="ghost"
-          size="icon"
-          className={cn("h-9 w-9 cursor-pointer", className)}
+          size="sm"
+          className={cn("gap-2 px-3", className)}
           {...props}
         >
           {isPending ? (
-            <Loader2 className="h-[1.3rem] w-[1.3rem] animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <Globe className="h-[1.3rem] w-[1.3rem] hover:text-zinc-200" />
+            <Globe className="h-4 w-4" />
           )}
-          <span className="sr-only">Change language</span>
+          <span className="font-medium">
+            {localeOptionsList.find((l) => l.value === currentLocale)?.label}
+          </span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="p-3 w-40 mt-2">

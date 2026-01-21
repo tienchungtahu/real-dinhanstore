@@ -6,8 +6,9 @@ import { useTranslations } from "next-intl";
 import { Search, X, Clock, TrendingUp, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useDebounce } from "@/app/hooks/useDebounce";
 
-interface PurchasedProduct {
+interface ProductResult {
   id: number;
   name: string;
   slug: string;
@@ -15,36 +16,61 @@ interface PurchasedProduct {
   salePrice: number | null;
   images: string[];
   brand: string;
-  category: string;
-  purchaseCount: number;
+  category?: {
+    name: string;
+    slug: string;
+  };
+  purchaseCount?: number;
 }
 
 export function SearchBar({ className = "" }: { className?: string }) {
   const t = useTranslations("common");
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
   const [isOpen, setIsOpen] = useState(false);
-  const [purchasedProducts, setPurchasedProducts] = useState<PurchasedProduct[]>([]);
+  const [purchasedProducts, setPurchasedProducts] = useState<ProductResult[]>([]);
+  const [apiResults, setApiResults] = useState<ProductResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasFetched, setHasFetched] = useState(false);
+  const [hasFetchedHistory, setHasFetchedHistory] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Fetch purchased products when search is focused
+  // Fetch purchased products when search is focused (only once)
   const fetchPurchaseHistory = async () => {
-    if (hasFetched) return;
-    setIsLoading(true);
+    if (hasFetchedHistory) return;
     try {
       const res = await fetch("/api/users/purchase-history");
       const data = await res.json();
       setPurchasedProducts(data.products || []);
-      setHasFetched(true);
+      setHasFetchedHistory(true);
     } catch (error) {
       console.error("Error fetching purchase history:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  // Fetch API results when debounced query changes
+  useEffect(() => {
+    const fetchSearchResults = async () => {
+      if (!debouncedQuery.trim()) {
+        setApiResults([]);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/products?search=${encodeURIComponent(debouncedQuery)}&limit=5`);
+        const data = await res.json();
+        setApiResults(data.products || []);
+      } catch (error) {
+        console.error("Error searching products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSearchResults();
+  }, [debouncedQuery]);
 
   // Handle click outside
   useEffect(() => {
@@ -59,7 +85,7 @@ export function SearchBar({ className = "" }: { className?: string }) {
 
   const handleFocus = () => {
     setIsOpen(true);
-    fetchPurchaseHistory();
+    if (!query) fetchPurchaseHistory();
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -75,14 +101,7 @@ export function SearchBar({ className = "" }: { className?: string }) {
     return new Intl.NumberFormat("vi-VN").format(price) + "đ";
   };
 
-  // Filter products based on query
-  const filteredProducts = query.trim()
-    ? purchasedProducts.filter(
-        (p) =>
-          p.name.toLowerCase().includes(query.toLowerCase()) ||
-          p.brand.toLowerCase().includes(query.toLowerCase())
-      )
-    : purchasedProducts;
+  const displayProducts = query.trim() ? apiResults : purchasedProducts;
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
@@ -100,7 +119,10 @@ export function SearchBar({ className = "" }: { className?: string }) {
         {query && (
           <button
             type="button"
-            onClick={() => setQuery("")}
+            onClick={() => {
+              setQuery("");
+              setApiResults([]);
+            }}
             className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
           >
             <X className="w-4 h-4" />
@@ -118,7 +140,7 @@ export function SearchBar({ className = "" }: { className?: string }) {
           ) : (
             <>
               {/* Header */}
-              {purchasedProducts.length > 0 && (
+              {(displayProducts.length > 0 || !query) && (
                 <div className="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
                   <div className="flex items-center gap-2 text-sm font-medium text-gray-600">
                     <Clock className="w-4 h-4 text-emerald-500" />
@@ -129,8 +151,8 @@ export function SearchBar({ className = "" }: { className?: string }) {
 
               {/* Products List */}
               <div className="max-h-[400px] overflow-y-auto">
-                {filteredProducts.length > 0 ? (
-                  filteredProducts.map((product) => (
+                {displayProducts.length > 0 ? (
+                  displayProducts.map((product) => (
                     <Link
                       key={product.id}
                       href={`/products/${product.slug}`}
@@ -158,9 +180,17 @@ export function SearchBar({ className = "" }: { className?: string }) {
                         <p className="text-sm font-medium text-gray-900 truncate">
                           {product.name}
                         </p>
-                        <p className="text-xs text-gray-500">{product.brand}</p>
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <span>{product.brand}</span>
+                          {product.category && (
+                            <>
+                              <span>•</span>
+                              <span>{product.category.name}</span>
+                            </>
+                          )}
+                        </div>
                         <div className="flex items-center gap-2 mt-1">
-                          {product.salePrice ? (
+                          {product.salePrice && Number(product.salePrice) > 0 ? (
                             <>
                               <span className="text-sm font-bold text-emerald-600">
                                 {formatPrice(product.salePrice)}
@@ -176,10 +206,12 @@ export function SearchBar({ className = "" }: { className?: string }) {
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-gray-400">
-                        <TrendingUp className="w-3 h-3" />
-                        <span>x{product.purchaseCount}</span>
-                      </div>
+                      {product.purchaseCount && (
+                        <div className="flex items-center gap-1 text-xs text-gray-400">
+                          <TrendingUp className="w-3 h-3" />
+                          <span>x{product.purchaseCount}</span>
+                        </div>
+                      )}
                     </Link>
                   ))
                 ) : (
