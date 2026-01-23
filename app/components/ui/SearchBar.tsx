@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Search, X, Clock, TrendingUp, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -25,6 +25,7 @@ interface ProductResult {
 
 export function SearchBar({ className = "" }: { className?: string }) {
   const t = useTranslations("common");
+  const locale = useLocale();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
@@ -98,7 +99,7 @@ export function SearchBar({ className = "" }: { className?: string }) {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("vi-VN").format(price) + "đ";
+    return new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(price) + t("currency");
   };
 
   const displayProducts = query.trim() ? apiResults : purchasedProducts;

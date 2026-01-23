@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import {
   Search,
   SlidersHorizontal,
@@ -33,6 +33,8 @@ const categoryIcons: Record<string, string> = {
 
 export default function ProductsPage() {
   const t = useTranslations("products");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category") || "all";
   const brandParam = searchParams.get("brand") || "";
@@ -298,7 +300,6 @@ export default function ProductsPage() {
                   </div>
                 </div>
 
-
                 {/* Price Range */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
                   <h3 className="font-bold text-gray-900 mb-4">{t("priceRange")}</h3>
@@ -318,39 +319,41 @@ export default function ProductsPage() {
                       }}
                       className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
                     />
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg group hover:bg-white hover:ring-2 hover:ring-emerald-500/20 transition-all">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center gap-1.5 px-3 py-2 bg-gray-100 rounded-lg group hover:bg-white hover:ring-2 hover:ring-emerald-500/20 transition-all min-w-0">
                         <input
                           type="text"
-                          value={priceRange[0].toLocaleString()}
+                          value={priceRange[0].toLocaleString(locale === "vi" ? "vi-VN" : "en-US")}
                           onChange={(e) => {
                             const val = Number(e.target.value.replace(/\D/g, ""));
                             if (val <= priceRange[1]) {
                               setPriceRange([val, priceRange[1]]);
-                              setCurrentPage(1);
                             }
                           }}
-                          className="w-20 bg-transparent text-sm font-medium text-gray-600 focus:outline-none"
+                          onBlur={() => setCurrentPage(1)}
+                          className="w-full bg-transparent text-sm font-medium text-gray-600 focus:outline-none min-w-[20px]"
                         />
-                        <span className="text-gray-400">đ</span>
-                        <Pencil className="w-3 h-3 text-gray-400 group-hover:text-emerald-500" />
+                        <span className="text-gray-400 text-xs shrink-0">{tCommon("currency")}</span>
+                        <Pencil className="w-3 h-3 text-gray-400 group-hover:text-emerald-500 shrink-0" />
                       </div>
 
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-lg group hover:bg-white hover:ring-2 hover:ring-emerald-500/20 transition-all">
+                      <div className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 rounded-lg group hover:bg-white hover:ring-2 hover:ring-emerald-500/20 transition-all min-w-0">
                         <input
                           type="text"
-                          value={priceRange[1].toLocaleString()}
+                          value={priceRange[1].toLocaleString(locale === "vi" ? "vi-VN" : "en-US")}
                           onChange={(e) => {
                             const val = Number(e.target.value.replace(/\D/g, ""));
+                            // Allow typing but clamp logic usually handled on blur or strict check
+                            // Here we strictly check to keep state valid
                             if (val >= priceRange[0] && val <= 10000000) {
                               setPriceRange([priceRange[0], val]);
-                              setCurrentPage(1);
                             }
                           }}
-                          className="w-20 bg-transparent text-sm font-medium text-emerald-700 focus:outline-none"
+                          onBlur={() => setCurrentPage(1)}
+                          className="w-full bg-transparent text-sm font-medium text-emerald-700 focus:outline-none min-w-[20px]"
                         />
-                        <span className="text-emerald-600">đ</span>
-                        <Pencil className="w-3 h-3 text-emerald-600/50 group-hover:text-emerald-600" />
+                        <span className="text-emerald-600 text-xs shrink-0">{tCommon("currency")}</span>
+                        <Pencil className="w-3 h-3 text-emerald-600/50 group-hover:text-emerald-600 shrink-0" />
                       </div>
                     </div>
                   </div>
